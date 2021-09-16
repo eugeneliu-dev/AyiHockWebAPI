@@ -15,7 +15,9 @@ namespace AyiHockWebAPI.Models
         public bool Enable { get; set; }
         public int Role { get; set; }
         public bool Isblack { get; set; }
-        public DateTime? CreateTime { get; set; }
-        public DateTime? ModifyTime { get; set; }
+        public DateTime CreateTime { get; set; }
+        public DateTime ModifyTime { get; set; }
+        public int Money { get; set; }
+        public Guid Modifier { get; set; }
     }
 }

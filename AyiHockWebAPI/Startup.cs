@@ -1,4 +1,5 @@
 ﻿using AyiHockWebAPI.Helpers;
+using AyiHockWebAPI.Middleware;
 using AyiHockWebAPI.Models;
 using AyiHockWebAPI.Services;
 using AyiHockWebAPI.ValidationAttributes;
@@ -15,9 +16,12 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using StackExchange.Redis;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
@@ -39,9 +43,20 @@ namespace AyiHockWebAPI
         {
             //注入Helper
             services.AddSingleton<JwtHelper>();
+            services.AddSingleton<EncryptDecryptHelper>();
+            services.AddSingleton<AutoSendEmailHelper>();
 
             //注入Service
             services.AddScoped<LoginService>();
+            services.AddScoped<MealService>();
+            services.AddScoped<NewsService>();
+            services.AddScoped<OrderService>();
+            services.AddScoped<CustomerService>();
+            services.AddScoped<ManagerService>();
+
+            //注入RadisService
+            var multiplexer = ConnectionMultiplexer.Connect(Configuration.GetValue<string>("Radis:ConnectStr"));
+            services.AddSingleton<IConnectionMultiplexer>(multiplexer);
 
             //PostgreSQL Connection
             services.AddDbContext<d5qp1l4f2lmt76Context>(options => options.UseNpgsql(Configuration.GetConnectionString("AyihockDB")));
@@ -63,8 +78,20 @@ namespace AyiHockWebAPI
             services.AddControllers();
             
             //SwaggerDoc
-            services.AddSwaggerGen(c => { c.SwaggerDoc("v1", new OpenApiInfo { Title = "AyiHockWebAPI", Version = "v1" }); });
+            services.AddSwaggerGen(c => 
+            { 
+                c.SwaggerDoc("v1", new OpenApiInfo 
+                { 
+                    Title = "WebAPI for AyiHockWebSite(Angular)", 
+                    Version = "v1",
+                    Description = "Roles: Customer (normal/golden/platinum/diamond)   ;   Manager (admin/staff)"
+                });
 
+                // 讀取 XML 檔案產生 API 說明
+                var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+                c.IncludeXmlComments(xmlPath);
+            });
 
             //JWT驗證
             services
@@ -122,6 +149,9 @@ namespace AyiHockWebAPI
                 app.UseSwagger();
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "AyiHockWebAPI v1"));
             }
+
+            //套用CatchException到Middleware
+            app.UseMiddleware<CatchExceptionMiddleware>();
 
             //套用Policy到Middleware
             app.UseCors("CorsPolicy");

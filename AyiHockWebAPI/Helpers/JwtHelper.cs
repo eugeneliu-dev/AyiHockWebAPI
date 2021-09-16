@@ -154,6 +154,12 @@ namespace AyiHockWebAPI.Helpers
                 case 3:
                     retStr = "diamond";
                     break;
+                case 10:
+                    retStr = "staff";
+                    break;
+                case 11:
+                    retStr = "admin";
+                    break;
                 default:
                     break;
             }

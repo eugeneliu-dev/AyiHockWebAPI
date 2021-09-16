@@ -13,8 +13,8 @@ namespace AyiHockWebAPI.Models
         public Guid Manager { get; set; }
         public DateTime CreateTime { get; set; }
         public bool IsHot { get; set; }
-        public int? Category { get; set; }
-        public DateTime? ModifyTime { get; set; }
+        public int Category { get; set; }
+        public DateTime ModifyTime { get; set; }
 
         public virtual Newscategory CategoryNavigation { get; set; }
         public virtual Manager ManagerNavigation { get; set; }

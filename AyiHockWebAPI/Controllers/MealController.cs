@@ -1,9 +1,13 @@
 ﻿using AyiHockWebAPI.Dtos;
+using AyiHockWebAPI.Filters;
 using AyiHockWebAPI.Models;
+using AyiHockWebAPI.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -15,30 +19,27 @@ using System.Threading.Tasks;
 namespace AyiHockWebAPI.Controllers
 {
     [Route("api/[controller]")]
+    [TypeFilter(typeof(ResultFormatFilter))]
     [ApiController]
     public class MealController : ControllerBase
     {
         private readonly d5qp1l4f2lmt76Context _ayihockDbContext;
-        private readonly IWebHostEnvironment _env;
-        public MealController(d5qp1l4f2lmt76Context ayihockDbContext, IWebHostEnvironment env)
+        private readonly MealService _mealService;
+
+        public MealController(d5qp1l4f2lmt76Context ayihockDbContext, MealService mealService)
         {
             _ayihockDbContext = ayihockDbContext;
-            _env = env;
+            _mealService = mealService;
         }
 
+        /// <summary>
+        /// 查詢菜單列表(ApplyRole: anonymous)
+        /// </summary>
+        /// <returns></returns>
         [HttpGet]
-        public ActionResult<List<MealGetDto>> Get()
+        public async Task<ActionResult<List<MealGetDto>>> Get()
         {
-            var meals = (from a in _ayihockDbContext.Meals
-                         select new MealGetDto
-                         {
-                             MealId = a.MealId,
-                             Name = a.Name,
-                             Description = a.Description,
-                             Type = a.Type,
-                             Price = a.Price,
-                             PicPath = a.Picture
-                         }).ToList();
+            var meals = await _mealService.GetMealList();
 
             if (meals == null || meals.Count() <= 0)
                 return NotFound();
@@ -46,15 +47,14 @@ namespace AyiHockWebAPI.Controllers
                 return Ok(meals);
         }
 
+        /// <summary>
+        /// 查詢菜單種類(ApplyRole: anonymous)
+        /// </summary>
+        /// <returns></returns>
         [HttpGet("types")]
-        public ActionResult<List<Mealtype>> GetTypes()
+        public async Task<ActionResult<List<Mealtype>>> GetTypes()
         {
-            var types = (from a in _ayihockDbContext.Mealtypes
-                         select new Mealtype
-                         {
-                             TypeId = a.TypeId,
-                             Type = a.Type
-                         }).ToList().OrderBy(a => a.TypeId);
+            var types = await _mealService.GetMealTypes();
 
             if (types == null || types.Count() <= 0)
                 return NotFound();
@@ -62,20 +62,14 @@ namespace AyiHockWebAPI.Controllers
                 return Ok(types);
         }
 
+        /// <summary>
+        /// 查詢單一菜色(ApplyRole: anonymous)
+        /// </summary>
+        /// <returns></returns>
         [HttpGet("{id}")]
-        public ActionResult<MealGetDto> Get(int id)
+        public async Task<ActionResult<MealGetDto>> Get(int id)
         {
-            var mealById = (from a in _ayihockDbContext.Meals
-                            where a.MealId == id
-                            select new MealGetDto
-                            {
-                                MealId = a.MealId,
-                                Name = a.Name,
-                                Description = a.Description,
-                                Type = a.Type,
-                                Price = a.Price,
-                                PicPath = a.Picture
-                            }).SingleOrDefault();
+            var mealById = await _mealService.GetMeal(id);
 
             if (mealById == null)
                 return NotFound();
@@ -83,30 +77,28 @@ namespace AyiHockWebAPI.Controllers
                 return mealById;
         }
 
+        /// <summary>
+        /// 查詢菜單列表(依菜單種類)(ApplyRole: anonymous)
+        /// </summary>
+        /// <returns></returns>
         [HttpGet("typeid/{type_id}")]
-        public ActionResult<List<MealGetDto>> GetByTypeId(int type_id)
+        public async Task<ActionResult<List<MealGetDto>>> GetByTypeId(int type_id)
         {
-            var res = (from a in _ayihockDbContext.Mealtypes
-                       select a).ToList().OrderBy(a => a.TypeId);
+            var check = await (from a in _ayihockDbContext.Mealtypes
+                               select a).OrderBy(a => a.TypeId).ToListAsync();
 
-            if (type_id >= res.First().TypeId || type_id <= res.Last().TypeId)
+            if (type_id >= check.First().TypeId || type_id <= check.Last().TypeId)
             {
-                var mealsByType = (from a in _ayihockDbContext.Meals
-                                   where a.Type == type_id
-                                   select new MealGetDto
-                                   {
-                                       MealId = a.MealId,
-                                       Name = a.Name,
-                                       Description = a.Description,
-                                       Type = a.Type,
-                                       Price = a.Price,
-                                       PicPath = a.Picture
-                                   }).ToList().OrderBy(a => a.MealId);
+                var mealsByType = await _mealService.GetMealListByTypeId(type_id);
 
                 if (mealsByType == null || mealsByType.Count() <= 0)
+                {
                     return NotFound();
+                }
                 else
+                {
                     return Ok(mealsByType);
+                }
             }
             else
             {
@@ -114,61 +106,35 @@ namespace AyiHockWebAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// 新增菜色(ApplyRole: admin/staff)
+        /// </summary>
+        /// <returns></returns>
         [HttpPost]
-        public ActionResult Post([FromForm] MealPostDto value)
+        [Authorize("JtiRestraint")]
+        [Authorize(Roles = "admin, staff")]
+        public async Task<ActionResult> Post([FromForm] MealPostDto value)
         {
-            string root = _env.ContentRootPath + @"\wwwroot\meals\";
-            if (!Directory.Exists(root))
-                Directory.CreateDirectory(root);
-
-            string filePath = root + value.File.FileName;
-
-            try
-            {
-                using (var stream = System.IO.File.Create(filePath))
-                {
-                    value.File.CopyTo(stream);
-                }
-
-                Meal meal = new Meal
-                {
-                    Name = value.Meal.Name,
-                    Description = value.Meal.Description,
-                    Type = value.Meal.Type,
-                    Price = value.Meal.Price,
-                    Picture = filePath
-                };
-
-                _ayihockDbContext.Meals.Add(meal);
-            }
-            catch (Exception ex)
-            {
-                //TODO: exception handle
-                return BadRequest(ex.ToString());
-            }
-
-            _ayihockDbContext.SaveChanges();
+            await _mealService.PostMeal(value);
 
             return Ok();
         }
 
+        /// <summary>
+        /// 修改單一菜色(ApplyRole: admin/staff)
+        /// </summary>
+        /// <returns></returns>
         [HttpPut("{id}")]
-        public ActionResult Put(int id, [FromBody] MealPutDto value)
+        [Authorize("JtiRestraint")]
+        [Authorize(Roles = "admin, staff")]
+        public async Task<ActionResult> Put(int id, [FromBody] MealPutDto value)
         {
-            var update = (from a in _ayihockDbContext.Meals
-                          where a.MealId == id
-                          select a).SingleOrDefault();
+            var update = _mealService.GetMealFullInfoFromDB(id);
 
             if (update != null)
             {
-                //update.Name = value.Name;
-                //update.Type = value.Type;
-                //update.Price = value.Price;
-                //update.Description = value.Description;
-                //update.Picture = value.PicPath;
-
                 _ayihockDbContext.Meals.Update(update).CurrentValues.SetValues(value);
-                _ayihockDbContext.SaveChanges();
+                await _ayihockDbContext.SaveChangesAsync();
             }
             else
             {
@@ -178,17 +144,21 @@ namespace AyiHockWebAPI.Controllers
             return NoContent();
         }
 
+        /// <summary>
+        /// 修改單一菜色(ApplyRole: admin/staff)
+        /// </summary>
+        /// <returns></returns>
         [HttpPatch("{id}")]
-        public ActionResult Patch(int id, [FromBody] JsonPatchDocument value)
+        [Authorize("JtiRestraint")]
+        [Authorize(Roles = "admin, staff")]
+        public async Task<ActionResult> Patch(int id, [FromBody] JsonPatchDocument value)
         {
-            var update = (from a in _ayihockDbContext.Meals
-                          where a.MealId == id
-                          select a).SingleOrDefault();
+            var update = _mealService.GetMealFullInfoFromDB(id);
 
             if (update != null)
             {
                 value.ApplyTo(update);
-                _ayihockDbContext.SaveChanges();
+                await _ayihockDbContext.SaveChangesAsync();
                 return NoContent();
             }
             else
@@ -197,18 +167,22 @@ namespace AyiHockWebAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// 刪除單一菜色(ApplyRole: admin/staff)
+        /// </summary>
+        /// <returns></returns>
         [HttpDelete("{id}")]
-        public ActionResult Delete(int id)
+        [Authorize("JtiRestraint")]
+        [Authorize(Roles = "admin, staff")]
+        public async Task<ActionResult> Delete(int id)
         {
-            var delete = (from a in _ayihockDbContext.Meals
-                          where a.MealId == id
-                          select a).SingleOrDefault();
+            var delete = _mealService.GetMealFullInfoFromDB(id);
 
             if (delete == null)
                 return NotFound();
 
             _ayihockDbContext.Meals.Remove(delete);
-            _ayihockDbContext.SaveChanges();
+            await _ayihockDbContext.SaveChangesAsync();
 
             return NoContent();
         }

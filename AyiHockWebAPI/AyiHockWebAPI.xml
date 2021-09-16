@@ -1,0 +1,224 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>AyiHockWebAPI</name>
+    </assembly>
+    <members>
+        <member name="M:AyiHockWebAPI.Controllers.CustomerController.Get">
+            <summary>
+            查詢使用者列表(ApplyRole: admin/staff)
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:AyiHockWebAPI.Controllers.CustomerController.Get(System.Guid)">
+            <summary>
+            查詢使用者(ApplyRole: admin/staff)
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:AyiHockWebAPI.Controllers.CustomerController.GetUser">
+            <summary>
+            查詢使用者(ApplyRole: user)
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:AyiHockWebAPI.Controllers.CustomerController.Post(AyiHockWebAPI.Dtos.CustomerPostDto)">
+            <summary>
+            新增使用者(註冊帳戶)(ApplyRole: anonymous)
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:AyiHockWebAPI.Controllers.CustomerController.PostAuth(System.String)">
+            <summary>
+            驗證使用者(驗證帳戶)(ApplyRole: user)
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:AyiHockWebAPI.Controllers.CustomerController.Put(System.Guid,AyiHockWebAPI.Dtos.CustomerPutDto)">
+            <summary>
+            更新使用者(僅允許更新系統資料)(ApplyRole: admin/staff)
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:AyiHockWebAPI.Controllers.CustomerController.Put(AyiHockWebAPI.Dtos.CustomerPutByUserDto)">
+            <summary>
+            更新使用者(僅允許更新使用者基本資料)(ApplyRole: user)
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:AyiHockWebAPI.Controllers.CustomerController.PutPwd(AyiHockWebAPI.Dtos.CustomerPutPwdByUserDto)">
+            <summary>
+            更新使用者密碼(ApplyRole: user)
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:AyiHockWebAPI.Controllers.CustomerController.PutPwdReset">
+            <summary>
+            重置使用者密碼(ApplyRole: user)
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:AyiHockWebAPI.Controllers.CustomerController.Delete(System.Guid)">
+            <summary>
+            刪除使用者(ApplyRole: admin/staff)
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:AyiHockWebAPI.Controllers.LoginController.SignIn(AyiHockWebAPI.Dtos.LoginDto)">
+            <summary>
+            前台帳號登入(ApplyRole: anonymous)
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:AyiHockWebAPI.Controllers.LoginController.AdminSignIn(AyiHockWebAPI.Dtos.LoginDto)">
+            <summary>
+            後台帳號登入(ApplyRole: anonymous)
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:AyiHockWebAPI.Controllers.ManagerController.GetUsersTotalInfo">
+            <summary>
+            查詢管理人員列表(完整資料)(ApplyRole: admin)
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:AyiHockWebAPI.Controllers.ManagerController.GetUserTotalInfo(System.Guid)">
+            <summary>
+            查詢管理人員(完整資料)(ApplyRole: admin)
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:AyiHockWebAPI.Controllers.ManagerController.GetUserBasicInfo">
+            <summary>
+            查詢管理人員(基本資料)(ApplyRole: staff/admin)
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:AyiHockWebAPI.Controllers.ManagerController.Post(AyiHockWebAPI.Dtos.ManagerPostDto)">
+            <summary>
+            新增管理人員(ApplyRole: admin)
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:AyiHockWebAPI.Controllers.ManagerController.Put(System.Guid,AyiHockWebAPI.Dtos.ManagerPutDto)">
+            <summary>
+            修改管理人員(ApplyRole: admin)
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:AyiHockWebAPI.Controllers.ManagerController.PutPwd(AyiHockWebAPI.Dtos.ManagerPutPwdDto)">
+            <summary>
+            修改管理人員個人密碼(ApplyRole: staff/admin)
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:AyiHockWebAPI.Controllers.ManagerController.PutPwdReset">
+            <summary>
+            重置管理人員個人密碼(ApplyRole: staff/admin)
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:AyiHockWebAPI.Controllers.ManagerController.Delete(System.Guid)">
+            <summary>
+            刪除管理人員(ApplyRole: admin)
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:AyiHockWebAPI.Controllers.MealController.Get">
+            <summary>
+            查詢菜單列表(ApplyRole: anonymous)
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:AyiHockWebAPI.Controllers.MealController.GetTypes">
+            <summary>
+            查詢菜單種類(ApplyRole: anonymous)
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:AyiHockWebAPI.Controllers.MealController.Get(System.Int32)">
+            <summary>
+            查詢單一菜色(ApplyRole: anonymous)
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:AyiHockWebAPI.Controllers.MealController.GetByTypeId(System.Int32)">
+            <summary>
+            查詢菜單列表(依菜單種類)(ApplyRole: anonymous)
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:AyiHockWebAPI.Controllers.MealController.Post(AyiHockWebAPI.Dtos.MealPostDto)">
+            <summary>
+            新增菜色(ApplyRole: admin/staff)
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:AyiHockWebAPI.Controllers.MealController.Put(System.Int32,AyiHockWebAPI.Dtos.MealPutDto)">
+            <summary>
+            修改單一菜色(ApplyRole: admin/staff)
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:AyiHockWebAPI.Controllers.MealController.Patch(System.Int32,Microsoft.AspNetCore.JsonPatch.JsonPatchDocument)">
+            <summary>
+            修改單一菜色(ApplyRole: admin/staff)
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:AyiHockWebAPI.Controllers.MealController.Delete(System.Int32)">
+            <summary>
+            刪除單一菜色(ApplyRole: admin/staff)
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:AyiHockWebAPI.Controllers.NewsController.Get">
+            <summary>
+            查詢新聞列表(ApplyRole: anonymous)
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:AyiHockWebAPI.Controllers.NewsController.Get(System.Int32)">
+            <summary>
+            查詢新聞(ApplyRole: anonymous)
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:AyiHockWebAPI.Controllers.NewsController.Post(AyiHockWebAPI.Dtos.NewsPostDto)">
+            <summary>
+            新增新聞(ApplyRole: admin/staff)
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:AyiHockWebAPI.Controllers.NewsController.Put(System.Int32,AyiHockWebAPI.Dtos.NewsPutDto)">
+            <summary>
+            修改新聞(ApplyRole: admin/staff)
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:AyiHockWebAPI.Controllers.NewsController.Delete(System.Int32)">
+            <summary>
+            刪除新聞(ApplyRole: admin/staff)
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:AyiHockWebAPI.Controllers.OrderController.Get">
+            <summary>
+            查詢個人訂單列表(ApplyRole: customer)
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:AyiHockWebAPI.Controllers.OrderController.Post(AyiHockWebAPI.Dtos.OrderPostDto)">
+            <summary>
+            新增個人訂單(ApplyRole: customer)
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:AyiHockWebAPI.Controllers.OrderController.Delete(System.String)">
+            <summary>
+            刪除個人訂單(ApplyRole: staff/admin)
+            </summary>
+            <returns></returns>
+        </member>
+    </members>
+</doc>

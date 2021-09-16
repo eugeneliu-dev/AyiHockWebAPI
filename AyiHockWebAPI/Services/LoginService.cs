@@ -1,6 +1,8 @@
 ﻿using AyiHockWebAPI.Dtos;
 using AyiHockWebAPI.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using StackExchange.Redis;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,24 +14,14 @@ namespace AyiHockWebAPI.Services
     {
 
         private readonly d5qp1l4f2lmt76Context _ayihockDbContext;
-        public LoginService(d5qp1l4f2lmt76Context ayihockDbContext)
+        private readonly IConfiguration _configuration;
+        private readonly IConnectionMultiplexer _redis;
+
+        public LoginService(d5qp1l4f2lmt76Context ayihockDbContext, IConfiguration config, IConnectionMultiplexer radis)
         {
             _ayihockDbContext = ayihockDbContext;
-        }
-        public async Task<bool> DeleteExpiredJti(int expiredTime)
-        {
-            try
-            {
-                var expiredJtis = _ayihockDbContext.Jtiblacklists.Where(x => x.Expire.AddMinutes(expiredTime) < DateTime.Now);
-                _ayihockDbContext.Jtiblacklists.RemoveRange(expiredJtis);
-                await _ayihockDbContext.SaveChangesAsync();
-            }
-            catch (Exception)
-            {
-                return false;
-            }
-
-            return true;
+            _configuration = config;
+            _redis = radis;
         }
 
         public async Task<LoginDtoWithRole> ValidateUser(LoginDto login)
@@ -53,21 +45,36 @@ namespace AyiHockWebAPI.Services
             }
         }
 
+        public async Task<LoginDtoWithRole> ValidateAdmin(LoginDto login)
+        {
+            if (!string.IsNullOrWhiteSpace(login.Email) && !string.IsNullOrWhiteSpace(login.Password))
+            {
+                var res = await (from a in _ayihockDbContext.Managers
+                                 where a.Email == login.Email && a.Password == login.Password && a.Enable == true
+                                 select new LoginDtoWithRole
+                                 {
+                                     Email = a.Email,
+                                     Password = a.Password,
+                                     Role = (a.IsAdmin == true) ? 11 : 10, //11:Admin, 10:Staff
+                                     Name = a.Name
+                                 }).SingleOrDefaultAsync();
+                return res;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
         public async Task<bool> SetJtiToBlackList(string jti, int expire )
         {
             if (string.IsNullOrWhiteSpace(jti) || expire <= 0)
                 return false;
 
-            if (await IsJtiInBlackList(jti))
-                return true;
-
             try
             {
-                DateTime dateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
-                dateTime = dateTime.AddSeconds(expire).ToLocalTime();
-
-                _ayihockDbContext.Jtiblacklists.Add(new Jtiblacklist { Jti = jti, Expire = dateTime });
-                await _ayihockDbContext.SaveChangesAsync();
+                IDatabase cache = _redis.GetDatabase(0);
+                cache.StringSet(jti, expire, TimeSpan.FromSeconds(expire - DateTimeOffset.Now.ToUnixTimeSeconds()), When.NotExists);
             }
             catch
             {
@@ -76,11 +83,6 @@ namespace AyiHockWebAPI.Services
             }
 
             return true;
-        }
-
-        public async Task<bool> IsJtiInBlackList(string jti)
-        {
-            return await _ayihockDbContext.Jtiblacklists.Where(x => x.Jti == jti).CountAsync() > 0;
         }
 
     }

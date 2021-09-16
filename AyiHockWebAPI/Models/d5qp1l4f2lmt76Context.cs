@@ -30,7 +30,6 @@ namespace AyiHockWebAPI.Models
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -55,7 +54,11 @@ namespace AyiHockWebAPI.Models
 
                 entity.Property(e => e.Isblack).HasColumnName("isblack");
 
+                entity.Property(e => e.Modifier).HasColumnName("modifier");
+
                 entity.Property(e => e.ModifyTime).HasColumnName("modify_time");
+
+                entity.Property(e => e.Money).HasColumnName("money");
 
                 entity.Property(e => e.Name)
                     .IsRequired()
@@ -213,6 +216,7 @@ namespace AyiHockWebAPI.Models
                 entity.HasOne(d => d.CategoryNavigation)
                     .WithMany(p => p.News)
                     .HasForeignKey(d => d.Category)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("news_category_fkey");
 
                 entity.HasOne(d => d.ManagerNavigation)
@@ -288,7 +292,7 @@ namespace AyiHockWebAPI.Models
                     .WithMany(p => p.Ordercontents)
                     .HasForeignKey(d => d.OrderId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("ordercontent_orderid_fkey");
+                    .HasConstraintName("order_id_fkey");
             });
 
             OnModelCreatingPartial(modelBuilder);

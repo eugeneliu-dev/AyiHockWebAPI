@@ -1,5 +1,6 @@
 ﻿using AyiHockWebAPI.Models;
 using Microsoft.AspNetCore.Authorization;
+using StackExchange.Redis;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,9 +13,11 @@ namespace AyiHockWebAPI.ValidationAttributes
         public class ValidJtiHandler:AuthorizationHandler<ValidJtiRequirement>
         {
             private readonly d5qp1l4f2lmt76Context _ayihockDbContext;
-            public ValidJtiHandler(d5qp1l4f2lmt76Context ayihockDbContext)
+            private readonly IConnectionMultiplexer _redis;
+            public ValidJtiHandler(d5qp1l4f2lmt76Context ayihockDbContext, IConnectionMultiplexer radis)
             {
                 _ayihockDbContext = ayihockDbContext;
+                _redis = radis;
             }
 
             protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, ValidJtiRequirement requirement)
@@ -27,8 +30,9 @@ namespace AyiHockWebAPI.ValidationAttributes
                     return Task.CompletedTask;
                 }
 
-                //檢查Jti是否在黑名單 _ayihockDbContext.Jtiblacklists.Where(x => x.Jti == jti).Count() > 0;
-                var tokenExists = _ayihockDbContext.Jtiblacklists.Any(r => r.Jti == jti);
+                IDatabase cache = _redis.GetDatabase(0);
+                var tokenExists = cache.KeyExists(jti);
+
                 if (tokenExists)
                     context.Fail();
                 else

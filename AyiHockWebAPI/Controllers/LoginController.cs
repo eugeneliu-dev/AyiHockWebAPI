@@ -1,4 +1,5 @@
 ﻿using AyiHockWebAPI.Dtos;
+using AyiHockWebAPI.Filters;
 using AyiHockWebAPI.Helpers;
 using AyiHockWebAPI.Models;
 using AyiHockWebAPI.Services;
@@ -36,7 +37,12 @@ namespace AyiHockWebAPI.Controllers
             _loginService = loginService;
         }
 
+        /// <summary>
+        /// 前台帳號登入(ApplyRole: anonymous)
+        /// </summary>
+        /// <returns></returns>
         [AllowAnonymous]
+        [TypeFilter(typeof(ResultFormatFilter))]
         [HttpPost("signin")]
         public async Task<ActionResult<string>> SignIn([FromBody] LoginDto login)
         {
@@ -45,7 +51,31 @@ namespace AyiHockWebAPI.Controllers
             if (loginDtoWithRole != null)
             {
                 //整理jti黑名單資料
-                bool ret = await _loginService.DeleteExpiredJti(30);
+                //bool ret = await _loginService.DeleteExpiredJti(30);
+
+                //回傳JwtToken
+                return Ok(_jwtHelper.GenerateToken(loginDtoWithRole.Email, loginDtoWithRole.Role, loginDtoWithRole.Name));
+            }
+            else
+            {
+                return BadRequest();
+            }
+        }
+
+        /// <summary>
+        /// 後台帳號登入(ApplyRole: anonymous)
+        /// </summary>
+        /// <returns></returns>
+        [AllowAnonymous]
+        [HttpPost("adminsignin")]
+        public async Task<ActionResult<string>> AdminSignIn([FromBody] LoginDto login)
+        {
+            LoginDtoWithRole loginDtoWithRole = await _loginService.ValidateAdmin(login);
+
+            if (loginDtoWithRole != null)
+            {
+                //整理jti黑名單資料
+                //bool ret = await _loginService.DeleteExpiredJti(30);
 
                 //回傳JwtToken
                 return _jwtHelper.GenerateToken(loginDtoWithRole.Email, loginDtoWithRole.Role, loginDtoWithRole.Name);
@@ -69,6 +99,7 @@ namespace AyiHockWebAPI.Controllers
             var jti = User.Claims.FirstOrDefault(p => p.Type == "jti");
             return Ok(jti.Value);
         }
+
 
         [HttpPost("logout")]
         public async Task<ActionResult> LogoutToken()
