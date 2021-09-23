@@ -144,7 +144,7 @@ namespace AyiHockWebAPI.Controllers
                 CustomerId = guid,
                 Name = value.Name,
                 Email = value.Email,
-                Password = _encryptDecryptHelper.AESDecrypt(value.Password), //需前端加密處理,後端解密
+                Password = _encryptDecryptHelper.AESDecrypt(value.Password).Replace("\"", ""), //需前端加密處理,後端解密
                 Phone = value.Phone,
                 Enable = false,
                 Isblack = false,
@@ -166,7 +166,7 @@ namespace AyiHockWebAPI.Controllers
         /// 驗證使用者(驗證帳戶)(ApplyRole: user)
         /// </summary>
         /// <returns></returns>
-        [HttpPost("auth")]
+        [HttpGet("auth")]
         public ActionResult PostAuth(string varify)
         {
             //trans varifyStr to Guid
@@ -186,6 +186,9 @@ namespace AyiHockWebAPI.Controllers
                 //modify Enable to 'true'
                 customer.Enable = true;
                 _ayihockDbContext.SaveChanges();
+
+                string url = _configuration.GetValue<string>("WebSite:Url");
+                System.Diagnostics.Process.Start("explorer", url);
             }
 
             return NoContent();

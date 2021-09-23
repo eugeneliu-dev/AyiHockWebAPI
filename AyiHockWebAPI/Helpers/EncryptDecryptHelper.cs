@@ -16,68 +16,25 @@ namespace AyiHockWebAPI.Helpers
         {
             _configuration = configuration;
         }
-        public string AESEncrypt(string SourceStr)
+        
+
+        public string AESEncrypt(string plainText)
         {
-            string cryptoKey = _configuration.GetValue<string>("Encrypt:Key");
-            string encrypt = "";
+            var keybytes = Encoding.UTF8.GetBytes(_configuration.GetValue<string>("Encrypt:Key"));
+            var iv = Encoding.UTF8.GetBytes(_configuration.GetValue<string>("Encrypt:Key"));
 
-            try
-            {
-                AesCryptoServiceProvider aes = new AesCryptoServiceProvider();
-                MD5CryptoServiceProvider md5 = new MD5CryptoServiceProvider();
-                SHA256CryptoServiceProvider sha256 = new SHA256CryptoServiceProvider();
-                byte[] key = sha256.ComputeHash(Encoding.UTF8.GetBytes(cryptoKey));
-                byte[] iv = md5.ComputeHash(Encoding.UTF8.GetBytes(cryptoKey));
-                aes.Key = key;
-                aes.IV = iv;
-
-                byte[] dataByteArray = Encoding.UTF8.GetBytes(SourceStr);
-                using (MemoryStream ms = new MemoryStream())
-                using (CryptoStream cs = new CryptoStream(ms, aes.CreateEncryptor(), CryptoStreamMode.Write))
-                {
-                    cs.Write(dataByteArray, 0, dataByteArray.Length);
-                    cs.FlushFinalBlock();
-                    encrypt = Convert.ToBase64String(ms.ToArray());
-                }
-            }
-            catch (Exception e)
-            {
-               
-            }
-            return encrypt;
+            var encryoFromJavascript = EncryptStringToBytes(plainText, keybytes, iv);
+            return Convert.ToBase64String(encryoFromJavascript);
         }
 
-        public string AESDecrypt(string SourceStr)
+        public string AESDecrypt(string cipherText)
         {
-            string cryptoKey = _configuration.GetValue<string>("Encrypt:Key");
-            string decrypt = "";
+            var keybytes = Encoding.UTF8.GetBytes(_configuration.GetValue<string>("Encrypt:Key"));
+            var iv = Encoding.UTF8.GetBytes(_configuration.GetValue<string>("Encrypt:Key"));
 
-            try
-            {
-                AesCryptoServiceProvider aes = new AesCryptoServiceProvider();
-                MD5CryptoServiceProvider md5 = new MD5CryptoServiceProvider();
-                SHA256CryptoServiceProvider sha256 = new SHA256CryptoServiceProvider();
-                byte[] key = sha256.ComputeHash(Encoding.UTF8.GetBytes(cryptoKey));
-                byte[] iv = md5.ComputeHash(Encoding.UTF8.GetBytes(cryptoKey));
-                aes.Key = key;
-                aes.IV = iv;
-
-                byte[] dataByteArray = Convert.FromBase64String(SourceStr);
-                using (MemoryStream ms = new MemoryStream())
-                {
-                    using (CryptoStream cs = new CryptoStream(ms, aes.CreateDecryptor(), CryptoStreamMode.Write))
-                    {
-                        cs.Write(dataByteArray, 0, dataByteArray.Length);
-                        cs.FlushFinalBlock();
-                        decrypt = Encoding.UTF8.GetString(ms.ToArray());
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                
-            }
-            return decrypt;
+            var encrypted = Convert.FromBase64String(cipherText);
+            var decriptedFromJavascript = DecryptStringFromBytes(encrypted, keybytes, iv);
+            return decriptedFromJavascript;
         }
 
         public string GetRandomStr()
@@ -92,5 +49,178 @@ namespace AyiHockWebAPI.Helpers
 
             return new string(chars);
         }
+
+        private byte[] EncryptStringToBytes(string plainText, byte[] key, byte[] iv)
+        {
+            // Check arguments.
+            if (plainText == null || plainText.Length <= 0)
+            {
+                throw new ArgumentNullException("plainText");
+            }
+            if (key == null || key.Length <= 0)
+            {
+                throw new ArgumentNullException("key");
+            }
+            if (iv == null || iv.Length <= 0)
+            {
+                throw new ArgumentNullException("key");
+            }
+            byte[] encrypted;
+            // Create a RijndaelManaged object
+            // with the specified key and IV.
+            using (var rijAlg = new RijndaelManaged())
+            {
+                rijAlg.Mode = CipherMode.CBC;
+                rijAlg.Padding = PaddingMode.PKCS7;
+                rijAlg.FeedbackSize = 128;
+
+                rijAlg.Key = key;
+                rijAlg.IV = iv;
+
+                // Create a decrytor to perform the stream transform.
+                var encryptor = rijAlg.CreateEncryptor(rijAlg.Key, rijAlg.IV);
+
+                // Create the streams used for encryption.
+                using (var msEncrypt = new MemoryStream())
+                {
+                    using (var csEncrypt = new CryptoStream(msEncrypt, encryptor, CryptoStreamMode.Write))
+                    {
+                        using (var swEncrypt = new StreamWriter(csEncrypt))
+                        {
+                            //Write all data to the stream.
+                            swEncrypt.Write(plainText);
+                        }
+                        encrypted = msEncrypt.ToArray();
+                    }
+                }
+            }
+            // Return the encrypted bytes from the memory stream.
+            return encrypted;
+        }
+
+        private string DecryptStringFromBytes(byte[] cipherText, byte[] key, byte[] iv)
+        {
+            // Check arguments.
+            if (cipherText == null || cipherText.Length <= 0)
+            {
+                throw new ArgumentNullException("cipherText");
+            }
+            if (key == null || key.Length <= 0)
+            {
+                throw new ArgumentNullException("key");
+            }
+            if (iv == null || iv.Length <= 0)
+            {
+                throw new ArgumentNullException("key");
+            }
+
+            // Declare the string used to hold
+            // the decrypted text.
+            string plaintext = null;
+
+            // Create an RijndaelManaged object
+            // with the specified key and IV.
+            using (var rijAlg = new RijndaelManaged())
+            {
+                //Settings
+                rijAlg.Mode = CipherMode.CBC;
+                rijAlg.Padding = PaddingMode.PKCS7;
+                rijAlg.FeedbackSize = 128;
+
+                rijAlg.Key = key;
+                rijAlg.IV = iv;
+
+                // Create a decrytor to perform the stream transform.
+                var decryptor = rijAlg.CreateDecryptor(rijAlg.Key, rijAlg.IV);
+
+                try
+                {
+                    // Create the streams used for decryption.
+                    using (var msDecrypt = new MemoryStream(cipherText))
+                    {
+                        using (var csDecrypt = new CryptoStream(msDecrypt, decryptor, CryptoStreamMode.Read))
+                        {
+
+                            using (var srDecrypt = new StreamReader(csDecrypt))
+                            {
+                                // Read the decrypted bytes from the decrypting stream
+                                // and place them in a string.
+                                plaintext = srDecrypt.ReadToEnd();
+                            }
+                        }
+                    }
+                }
+                catch
+                {
+                    plaintext = "keyError";
+                }
+            }
+
+            return plaintext;
+        }
+
+
+        //public string AESDecrypt(string cipherText)
+        //{
+        //    string password = _configuration.GetValue<string>("Encrypt:Key");
+        //    byte[] cipherBytes = Convert.FromBase64String(cipherText);
+        //    using (Aes encryptor = Aes.Create())
+        //    {
+        //        var salt = cipherBytes.Take(16).ToArray();
+        //        var iv = cipherBytes.Skip(16).Take(16).ToArray();
+        //        var encrypted = cipherBytes.Skip(32).ToArray();
+        //        Rfc2898DeriveBytes pdb = new Rfc2898DeriveBytes(password, salt, 100);
+        //        encryptor.Key = pdb.GetBytes(32);
+        //        encryptor.Padding = PaddingMode.PKCS7;
+        //        encryptor.Mode = CipherMode.CBC;
+        //        encryptor.IV = iv;
+        //        using (MemoryStream ms = new MemoryStream(encrypted))
+        //        {
+        //            using (CryptoStream cs = new CryptoStream(ms, encryptor.CreateDecryptor(), CryptoStreamMode.Read))
+        //            {
+        //                using (var reader = new StreamReader(cs, Encoding.UTF8))
+        //                {
+        //                    return reader.ReadToEnd();
+        //                }
+        //            }
+        //        }
+        //    }
+        //}
+
+        //public string AESEncrypt(string plainText)
+        //{
+        //    byte[] iv = new byte[16];
+        //    byte[] array;
+
+        //    using (Aes aes = Aes.Create())
+        //    {
+        //        aes.Key = Encoding.UTF8.GetBytes(_configuration.GetValue<string>("Encrypt:Key"));
+        //        aes.IV = iv;
+        //        aes.Padding = PaddingMode.PKCS7;
+        //        aes.Mode = CipherMode.CBC;
+
+        //        ICryptoTransform encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
+
+        //        using (MemoryStream memoryStream = new MemoryStream())
+        //        {
+        //            using (CryptoStream cryptoStream = new CryptoStream((Stream)memoryStream, encryptor, CryptoStreamMode.Write))
+        //            {
+        //                using (StreamWriter streamWriter = new StreamWriter((Stream)cryptoStream))
+        //                {
+        //                    streamWriter.Write(plainText);
+        //                }
+
+        //                array = memoryStream.ToArray();
+        //            }
+        //        }
+        //    }
+
+        //    return Convert.ToBase64String(array);
+        //}
+
+
+
+
+
     }
 }

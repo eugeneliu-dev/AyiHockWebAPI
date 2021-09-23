@@ -17,7 +17,7 @@ using System.Threading.Tasks;
 namespace AyiHockWebAPI.Controllers
 {
     [Route("api/[controller]")]
-    [Authorize]
+    [TypeFilter(typeof(ResultFormatFilter))]
     [ApiController]
     public class LoginController : ControllerBase
     {
@@ -42,7 +42,6 @@ namespace AyiHockWebAPI.Controllers
         /// </summary>
         /// <returns></returns>
         [AllowAnonymous]
-        [TypeFilter(typeof(ResultFormatFilter))]
         [HttpPost("signin")]
         public async Task<ActionResult<string>> SignIn([FromBody] LoginDto login)
         {
@@ -78,7 +77,7 @@ namespace AyiHockWebAPI.Controllers
                 //bool ret = await _loginService.DeleteExpiredJti(30);
 
                 //回傳JwtToken
-                return _jwtHelper.GenerateToken(loginDtoWithRole.Email, loginDtoWithRole.Role, loginDtoWithRole.Name);
+                return Ok(_jwtHelper.GenerateToken(loginDtoWithRole.Email, loginDtoWithRole.Role, loginDtoWithRole.Name));
             }
             else
             {
@@ -86,22 +85,10 @@ namespace AyiHockWebAPI.Controllers
             }
         }
 
-        [HttpGet("roles")]
-        [Authorize("JtiRestraint")]
-        public ActionResult GetRoles()
-        {
-            return Ok(User.Claims.Where(p => p.Type == ClaimTypes.Role).Select(p => p.Value).ToList());
-        }
-
-        [HttpGet("jwtid")]
-        public ActionResult GetUniqueId()
-        {
-            var jti = User.Claims.FirstOrDefault(p => p.Type == "jti");
-            return Ok(jti.Value);
-        }
-
-
         [HttpPost("logout")]
+        [Authorize]
+        [Authorize("JtiRestraint")]
+        [Authorize(Roles = "admin, staff")]
         public async Task<ActionResult> LogoutToken()
         {
             //var principal = _jwtHelper.GetPrincipalByAccessToken(token.Access);

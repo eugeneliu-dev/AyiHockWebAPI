@@ -44,10 +44,10 @@ namespace AyiHockWebAPI.Services
             return meals;
         }
 
-        public async Task<List<Mealtype>> GetMealTypes()
+        public async Task<List<MealTypeGetDto>> GetMealTypes()
         {
             var types = await (from a in _ayihockDbContext.Mealtypes
-                               select new Mealtype
+                               select new MealTypeGetDto
                                {
                                    TypeId = a.TypeId,
                                    Type = a.Type
@@ -94,9 +94,6 @@ namespace AyiHockWebAPI.Services
                 Directory.CreateDirectory(root);
 
             string filePath = root + value.File.FileName;
-
-            var ss = new List<string>();
-            var dd = ss[0];
 
             using (var stream = System.IO.File.Create(filePath))
             {

@@ -14,4 +14,10 @@ namespace AyiHockWebAPI.Dtos
         public int Type { get; set; }
         public string PicPath { get; set; }
     }
+
+    public class MealTypeGetDto
+    {
+        public int TypeId { get; set; }
+        public string Type { get; set; }
+    }
 }
