@@ -111,6 +111,7 @@ namespace AyiHockWebAPI.Controllers
         [HttpPost]
         [Authorize("JtiRestraint")]
         [Authorize(Roles = "admin, staff")]
+        [ResourceTypeFilter]
         public async Task<ActionResult> Post([FromForm] MealPostDto value)
         {
             await _mealService.PostMeal(value);
