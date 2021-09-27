@@ -16,4 +16,10 @@ namespace AyiHockWebAPI.Dtos
         public int MealPrice { get; set; }
         public string MealPic { get; set; }
     }
+
+    public class OrderContentPostDto
+    {
+        public int MealId { get; set; }
+        public int Quantity { get; set; }
+    }
 }

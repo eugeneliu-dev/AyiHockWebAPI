@@ -15,4 +15,13 @@ namespace AyiHockWebAPI.Dtos
         public DateTime ModifyTime { get; set; }
         public ICollection<OrderContentGetDto> OrderContents { get; set; }
     }
+
+    public class OrderPostDto
+    {
+        public int Status { get; set; }
+        public int TotalPrice { get; set; }
+        public string OrdererPhone { get; set; }
+        public int PayRule { get; set; }
+        public ICollection<OrderContentPostDto> OrderContents { get; set; }
+    }
 }

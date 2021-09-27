@@ -16,4 +16,20 @@ namespace AyiHockWebAPI.Dtos
         public bool IsHot { get; set; }
         public string CategoryName { get; set; }
     }
+
+    public class NewsPostDto
+    {
+        public string Title { get; set; }
+        public string Content { get; set; }
+        public bool IsHot { get; set; }
+        public int CategoryId { get; set; }
+    }
+
+    public class NewsPutDto
+    {
+        public string Title { get; set; }
+        public string Content { get; set; }
+        public bool IsHot { get; set; }
+        public int CategoryId { get; set; }
+    }
 }
