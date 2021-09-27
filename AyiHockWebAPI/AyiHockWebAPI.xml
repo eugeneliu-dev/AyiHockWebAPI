@@ -28,9 +28,9 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="M:AyiHockWebAPI.Controllers.CustomerController.PostAuth(System.String)">
+        <member name="M:AyiHockWebAPI.Controllers.CustomerController.GetAuth(System.String)">
             <summary>
-            驗證使用者(驗證帳戶)(ApplyRole: user)
+            驗證使用者(驗證帳戶)(ApplyRole: anonymous)
             </summary>
             <returns></returns>
         </member>
@@ -52,9 +52,9 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="M:AyiHockWebAPI.Controllers.CustomerController.PutPwdReset">
+        <member name="M:AyiHockWebAPI.Controllers.CustomerController.PutPwdReset(System.String)">
             <summary>
-            重置使用者密碼(ApplyRole: user)
+            重置使用者密碼(ApplyRole: anonymous)
             </summary>
             <returns></returns>
         </member>
@@ -76,13 +76,13 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="M:AyiHockWebAPI.Controllers.ManagerController.GetUsersTotalInfo">
+        <member name="M:AyiHockWebAPI.Controllers.ManagerController.GetManagersTotalInfo">
             <summary>
             查詢管理人員列表(完整資料)(ApplyRole: admin)
             </summary>
             <returns></returns>
         </member>
-        <member name="M:AyiHockWebAPI.Controllers.ManagerController.GetUserTotalInfo(System.Guid)">
+        <member name="M:AyiHockWebAPI.Controllers.ManagerController.GetManagerTotalInfo(System.Guid)">
             <summary>
             查詢管理人員(完整資料)(ApplyRole: admin)
             </summary>
@@ -112,9 +112,9 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="M:AyiHockWebAPI.Controllers.ManagerController.PutPwdReset">
+        <member name="M:AyiHockWebAPI.Controllers.ManagerController.PutPwdReset(System.String)">
             <summary>
-            重置管理人員個人密碼(ApplyRole: staff/admin)
+            重置管理人員個人密碼(ApplyRole: anonymous)
             </summary>
             <returns></returns>
         </member>
@@ -154,15 +154,15 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="M:AyiHockWebAPI.Controllers.MealController.Put(System.Int32,AyiHockWebAPI.Dtos.MealPutDto)">
+        <member name="M:AyiHockWebAPI.Controllers.MealController.Put(System.Int32,AyiHockWebAPI.Dtos.MealPutBasicInfoDto)">
             <summary>
-            修改單一菜色(ApplyRole: admin/staff)
+            修改單一菜色(只修改資訊)(ApplyRole: admin/staff)
             </summary>
             <returns></returns>
         </member>
-        <member name="M:AyiHockWebAPI.Controllers.MealController.Patch(System.Int32,Microsoft.AspNetCore.JsonPatch.JsonPatchDocument)">
+        <member name="M:AyiHockWebAPI.Controllers.MealController.PutAll(System.Int32,AyiHockWebAPI.Dtos.MealPutTotalInfoDto)">
             <summary>
-            修改單一菜色(ApplyRole: admin/staff)
+            修改單一菜色(修改資訊+圖片)(ApplyRole: admin/staff)
             </summary>
             <returns></returns>
         </member>

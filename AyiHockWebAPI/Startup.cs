@@ -1,4 +1,5 @@
 ﻿using AyiHockWebAPI.Helpers;
+using AyiHockWebAPI.Interface;
 using AyiHockWebAPI.Middleware;
 using AyiHockWebAPI.Models;
 using AyiHockWebAPI.Services;
@@ -45,6 +46,7 @@ namespace AyiHockWebAPI
             services.AddSingleton<JwtHelper>();
             services.AddSingleton<EncryptDecryptHelper>();
             services.AddSingleton<AutoSendEmailHelper>();
+            services.AddSingleton<ICloudStorage, GoogleCloudStorageHelper>();
 
             //注入Service
             services.AddScoped<LoginService>();

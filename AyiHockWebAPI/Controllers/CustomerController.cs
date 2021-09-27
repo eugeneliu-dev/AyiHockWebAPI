@@ -1,11 +1,12 @@
 ﻿using AyiHockWebAPI.Dtos;
+using AyiHockWebAPI.Filters;
 using AyiHockWebAPI.Helpers;
 using AyiHockWebAPI.Models;
+using AyiHockWebAPI.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,23 +16,18 @@ using System.Threading.Tasks;
 namespace AyiHockWebAPI.Controllers
 {
     [Route("api/[controller]")]
+    [TypeFilter(typeof(ResultFormatFilter))]
     [ApiController]
     public class CustomerController : ControllerBase
     {
-        private readonly d5qp1l4f2lmt76Context _ayihockDbContext;
-        private readonly IConfiguration _configuration;
         private readonly EncryptDecryptHelper _encryptDecryptHelper;
-        private readonly AutoSendEmailHelper _autoSendEmailHelper;
+        private readonly CustomerService _customerService;
 
-        public CustomerController(d5qp1l4f2lmt76Context ayihockDbContext, 
-                                  IConfiguration configuration, 
-                                  EncryptDecryptHelper encryptDecryptHelper,
-                                  AutoSendEmailHelper autoSendEmailHelper)
+        public CustomerController(EncryptDecryptHelper encryptDecryptHelper,
+                                  CustomerService customerService)
         {
-            _ayihockDbContext = ayihockDbContext;
-            _configuration = configuration;
             _encryptDecryptHelper = encryptDecryptHelper;
-            _autoSendEmailHelper = autoSendEmailHelper;
+            _customerService = customerService;
         }
 
         /// <summary>
@@ -39,24 +35,11 @@ namespace AyiHockWebAPI.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        [Authorize]
-        public ActionResult<List<CustomerGetDto>> Get()
+        [Authorize("JtiRestraint")]
+        [Authorize(Roles = "admin, staff")]
+        public async Task<ActionResult<List<CustomerGetDto>>> Get()
         {
-            var customers = (from a in _ayihockDbContext.Customers
-                             select new CustomerGetDto
-                             {
-                                 CustomerId = a.CustomerId,
-                                 Name = a.Name,
-                                 Email = a.Email,
-                                 Phone = a.Phone,
-                                 Enable = a.Enable,
-                                 Role = a.Role,
-                                 Isblack = a.Isblack,
-                                 Money = a.Money,
-                                 Modifier = a.Modifier,
-                                 CreateTime = a.CreateTime,
-                                 ModifyTime = a.ModifyTime
-                             }).ToList().OrderBy(a => a.CreateTime);
+            var customers = await _customerService.GetCustomerList();
 
             if (customers == null || customers.Count() <= 0)
                 return NotFound();
@@ -69,24 +52,11 @@ namespace AyiHockWebAPI.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet("{id}")]
-        public ActionResult<CustomerGetDto> Get(Guid id)
+        [Authorize("JtiRestraint")]
+        [Authorize(Roles = "admin, staff")]
+        public async Task<ActionResult<CustomerGetDto>> Get(Guid id)
         {
-            var customerById = (from a in _ayihockDbContext.Customers
-                                where a.CustomerId == id
-                                select new CustomerGetDto
-                                {
-                                    CustomerId = a.CustomerId,
-                                    Name = a.Name,
-                                    Email = a.Email,
-                                    Phone = a.Phone,
-                                    Enable = a.Enable,
-                                    Role = a.Role,
-                                    Isblack = a.Isblack,
-                                    Money = a.Money,
-                                    Modifier = a.Modifier,
-                                    CreateTime = a.CreateTime,
-                                    ModifyTime = a.ModifyTime
-                                }).SingleOrDefault();
+            var customerById = await _customerService.GetCustomerFromManager(id);
 
             if (customerById == null)
                 return NotFound();
@@ -99,99 +69,58 @@ namespace AyiHockWebAPI.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet("user")]
-        [Authorize]
-        public ActionResult<CustomerGetByUserDto> GetUser()
+        [Authorize("JtiRestraint")]
+        [Authorize(Roles = "normal, golden, platinum, diamond")]
+        public async Task<ActionResult<CustomerGetByUserDto>> GetUser()
         {
             var sub = User.Identity.Name;
 
-            var customer = (from a in _ayihockDbContext.Customers
-                            where a.Email == sub
-                            select new CustomerGetByUserDto
-                            {
-                                Name = a.Name,
-                                Email = a.Email,
-                                Phone = a.Phone,
-                                Enable = a.Enable,
-                                Role = a.Role,
-                                ModifyTime = a.ModifyTime
-                            }).SingleOrDefault();
+            var customer = await _customerService.GetCustomerFromUser(sub);
 
             if (customer == null)
                 return NotFound();
             else
-                return customer;
+                return Ok(customer);
         }
 
         /// <summary>
         /// 新增使用者(註冊帳戶)(ApplyRole: anonymous)
         /// </summary>
         /// <returns></returns>
-        [AllowAnonymous]
         [HttpPost]
-        public ActionResult Post([FromBody] CustomerPostDto value)
+        [AllowAnonymous]
+        public async Task<ActionResult> Post([FromBody] CustomerPostDto value)
         {
-            //var sub = User.Identity.Name;
-            var getCusByEmail = (from a in _ayihockDbContext.Customers
-                                 where a.Email == value.Email
-                                 select a).SingleOrDefault();
+            var getCusByEmail = _customerService.GetCustomerFromUser(value.Email);
             if (getCusByEmail != null)
                 return BadRequest();
+     
+            await _customerService.PostCustomer(value);
 
-            Guid guid = Guid.NewGuid();
-
-            Customer customer = new Customer
-            {
-                CustomerId = guid,
-                Name = value.Name,
-                Email = value.Email,
-                Password = _encryptDecryptHelper.AESDecrypt(value.Password).Replace("\"", ""), //需前端加密處理,後端解密
-                Phone = value.Phone,
-                Enable = false,
-                Isblack = false,
-                Modifier = guid,
-                CreateTime = DateTime.Now,
-                ModifyTime = DateTime.Now
-            };
-
-            _ayihockDbContext.Customers.Add(customer);
-            _ayihockDbContext.SaveChanges();
-
-            string authLink = "連結如下:\n" + "https://localhost:44394/api/customer/auth?varify=" + _encryptDecryptHelper.AESEncrypt(guid.ToString());
-            _autoSendEmailHelper.SendAuthEmail(value.Email, authLink);
-
-            return NoContent();
+            return Ok();
         }
 
         /// <summary>
-        /// 驗證使用者(驗證帳戶)(ApplyRole: user)
+        /// 驗證使用者(驗證帳戶)(ApplyRole: anonymous)
         /// </summary>
         /// <returns></returns>
         [HttpGet("auth")]
-        public ActionResult PostAuth(string varify)
+        [AllowAnonymous]
+        public async Task<ActionResult> GetAuth(string varify)
         {
             //trans varifyStr to Guid
             Guid guid = Guid.Parse(_encryptDecryptHelper.AESDecrypt(varify));
 
             //check Guid is exist?
-            var customer = (from a in _ayihockDbContext.Customers
-                            where a.CustomerId == guid && a.Enable == false
-                            select a).SingleOrDefault();
-
+            var customer = await _customerService.AuthCustomer(varify);
             if (customer == null)
             {
                 return NotFound("varifyication is failed");
             }
             else
             {
-                //modify Enable to 'true'
-                customer.Enable = true;
-                _ayihockDbContext.SaveChanges();
-
-                string url = _configuration.GetValue<string>("WebSite:Url");
-                System.Diagnostics.Process.Start("explorer", url);
+                return NoContent();
             }
-
-            return NoContent();
         }
 
         /// <summary>
@@ -199,29 +128,25 @@ namespace AyiHockWebAPI.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpPut("manager/{id}")]
-        public ActionResult Put(Guid id, [FromBody] CustomerPutDto value)
+        [Authorize("JtiRestraint")]
+        [Authorize(Roles = "admin, staff")]
+        public async Task<ActionResult> Put(Guid id, [FromBody] CustomerPutDto value)
         {
-            var update = (from a in _ayihockDbContext.Customers
-                          where a.CustomerId == id
-                          select a).SingleOrDefault();
+            var manager = _customerService.GetManagerInfo(User.Identity.Name);
+            if (manager == null)
+                return BadRequest();
+
+            var update = _customerService.GetCustomerFullInfoById(id);
 
             if (update != null)
             {
-                update.CustomerId = value.CustomerId;
-                update.Enable = value.Enable;
-                update.Role = value.Role;
-                update.Isblack = value.Isblack;
-                update.ModifyTime = value.ModifyTime;
-                update.Modifier = id;
-
-                _ayihockDbContext.SaveChanges();
+                await _customerService.PutCustomerFromManager(manager.ManagerId, value, update);
+                return NoContent();
             }
             else
             {
                 return NotFound();
             }
-
-            return NoContent();
         }
 
         /// <summary>
@@ -229,29 +154,21 @@ namespace AyiHockWebAPI.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpPut("user")]
-        public ActionResult Put([FromBody] CustomerPutByUserDto value)
+        [Authorize("JtiRestraint")]
+        [Authorize(Roles = "normal, golden, platinum, diamond")]
+        public async Task<ActionResult> Put([FromBody] CustomerPutByUserDto value)
         {
-            var sub = User.Identity.Name;
-
-            var update = (from a in _ayihockDbContext.Customers
-                          where a.Email == sub
-                          select a).SingleOrDefault();
+            var update = _customerService.GetCustomerFullInfoByMail(User.Identity.Name);
 
             if (update != null)
             {
-                update.Name = value.Name;
-                update.Phone = value.Phone;
-                update.ModifyTime = DateTime.Now;
-                update.Modifier = update.CustomerId;
-
-                _ayihockDbContext.SaveChanges();
+                await _customerService.PutCustomerFromUser(value, update);
+                return NoContent();
             }
             else
             {
                 return NotFound();
             }
-
-            return NoContent();
         }
 
         /// <summary>
@@ -259,56 +176,42 @@ namespace AyiHockWebAPI.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpPut("user/pwd")]
-        public ActionResult PutPwd([FromBody] CustomerPutPwdByUserDto value)
+        [Authorize("JtiRestraint")]
+        [Authorize(Roles = "normal, golden, platinum, diamond")]
+        public async Task<ActionResult> PutPwd([FromBody] CustomerPutPwdByUserDto value)
         {
-            var sub = User.Identity.Name;
-
-            var update = (from a in _ayihockDbContext.Customers
-                          where a.Email == sub && a.Password == _encryptDecryptHelper.AESDecrypt(value.OldPassword)
-                          select a).SingleOrDefault();
+            var update = _customerService.GetCustomerFullInfoByOldPassword(User.Identity.Name, value.OldPassword);
 
             if (update != null)
             {
-                update.Password = _encryptDecryptHelper.AESDecrypt(value.NewPassword);  //需前端加密處理,後端解密
-
-                _ayihockDbContext.SaveChanges();
+                await _customerService.PutCustomerNewPassword(value, update);
+                return NoContent();
             }
             else
             {
-                return BadRequest();
+                return BadRequest("舊帳號輸入錯誤!");
             }
-
-            return NoContent();
         }
 
         /// <summary>
-        /// 重置使用者密碼(ApplyRole: user)
+        /// 重置使用者密碼(ApplyRole: anonymous)
         /// </summary>
         /// <returns></returns>
         [HttpPut("user/pwdreset")]
-        public ActionResult PutPwdReset()
+        [AllowAnonymous]
+        public async Task<ActionResult> PutPwdReset(string mail)
         {
-            var sub = User.Identity.Name;
-
-            var update = (from a in _ayihockDbContext.Customers
-                          where a.Email == sub
-                          select a).SingleOrDefault();
+            var update = _customerService.GetCustomerFullInfoByMail(mail);
 
             if (update != null)
             {
-                string newPwd = _encryptDecryptHelper.GetRandomStr();
-                
-                update.Password = newPwd;
-                _ayihockDbContext.SaveChanges();
-
-                _autoSendEmailHelper.SendAuthEmail(sub, "新密碼如下:\n" + newPwd);
+                await _customerService.PutCustomerResetPassword(mail, update);
+                return Ok();
             }
             else
             {
-                return NotFound();
+                return BadRequest("電子郵件輸入錯誤!");
             }
-
-            return NoContent();
         }
 
         /// <summary>
@@ -316,19 +219,16 @@ namespace AyiHockWebAPI.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpDelete("{id}")]
-        public ActionResult Delete(Guid id)
+        [Authorize("JtiRestraint")]
+        [Authorize(Roles = "admin, staff")]
+        public async Task<ActionResult> Delete(Guid id)
         {
-            var delete = (from a in _ayihockDbContext.Customers
-                          where a.CustomerId == id
-                          select a).SingleOrDefault();
+            var delete = await _customerService.DeleteCustomer(id);
 
             if (delete == null)
-                return NotFound();
-
-            _ayihockDbContext.Customers.Remove(delete);
-            _ayihockDbContext.SaveChanges();
-
-            return NoContent();
+                return NotFound("CustomerId不存在!");
+            else
+                return Ok();
         }
 
 

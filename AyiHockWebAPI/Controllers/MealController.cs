@@ -1,5 +1,6 @@
 ﻿using AyiHockWebAPI.Dtos;
 using AyiHockWebAPI.Filters;
+using AyiHockWebAPI.Interface;
 using AyiHockWebAPI.Models;
 using AyiHockWebAPI.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -23,12 +24,10 @@ namespace AyiHockWebAPI.Controllers
     [ApiController]
     public class MealController : ControllerBase
     {
-        private readonly d5qp1l4f2lmt76Context _ayihockDbContext;
         private readonly MealService _mealService;
 
-        public MealController(d5qp1l4f2lmt76Context ayihockDbContext, MealService mealService)
+        public MealController(MealService mealService)
         {
-            _ayihockDbContext = ayihockDbContext;
             _mealService = mealService;
         }
 
@@ -74,7 +73,7 @@ namespace AyiHockWebAPI.Controllers
             if (mealById == null)
                 return NotFound();
             else
-                return mealById;
+                return Ok(mealById);
         }
 
         /// <summary>
@@ -84,10 +83,9 @@ namespace AyiHockWebAPI.Controllers
         [HttpGet("typeid/{type_id}")]
         public async Task<ActionResult<List<MealGetDto>>> GetByTypeId(int type_id)
         {
-            var check = await (from a in _ayihockDbContext.Mealtypes
-                               select a).OrderBy(a => a.TypeId).ToListAsync();
+            var types = await _mealService.GetMealTypes();
 
-            if (type_id >= check.First().TypeId || type_id <= check.Last().TypeId)
+            if (type_id >= types.First().TypeId || type_id <= types.Last().TypeId)
             {
                 var mealsByType = await _mealService.GetMealListByTypeId(type_id);
 
@@ -121,45 +119,42 @@ namespace AyiHockWebAPI.Controllers
         }
 
         /// <summary>
-        /// 修改單一菜色(ApplyRole: admin/staff)
+        /// 修改單一菜色(只修改資訊)(ApplyRole: admin/staff)
         /// </summary>
         /// <returns></returns>
-        [HttpPut("{id}")]
+        [HttpPut("basicinfo/{id}")]
         [Authorize("JtiRestraint")]
         [Authorize(Roles = "admin, staff")]
-        public async Task<ActionResult> Put(int id, [FromBody] MealPutDto value)
+        public async Task<ActionResult> Put(int id, [FromBody] MealPutBasicInfoDto value)
         {
             var update = _mealService.GetMealFullInfoFromDB(id);
 
             if (update != null)
             {
-                _ayihockDbContext.Meals.Update(update).CurrentValues.SetValues(value);
-                await _ayihockDbContext.SaveChangesAsync();
+                await _mealService.PutMeal(update, value);
+                return Ok();
             }
             else
             {
                 return NotFound();
             }
-
-            return NoContent();
         }
 
         /// <summary>
-        /// 修改單一菜色(ApplyRole: admin/staff)
+        /// 修改單一菜色(修改資訊+圖片)(ApplyRole: admin/staff)
         /// </summary>
         /// <returns></returns>
-        [HttpPatch("{id}")]
+        [HttpPut("allinfo/{id}")]
         [Authorize("JtiRestraint")]
         [Authorize(Roles = "admin, staff")]
-        public async Task<ActionResult> Patch(int id, [FromBody] JsonPatchDocument value)
+        public async Task<ActionResult> PutAll(int id, [FromForm] MealPutTotalInfoDto value)
         {
             var update = _mealService.GetMealFullInfoFromDB(id);
 
             if (update != null)
             {
-                value.ApplyTo(update);
-                await _ayihockDbContext.SaveChangesAsync();
-                return NoContent();
+                await _mealService.PutMealAll(update, value);
+                return Ok();
             }
             else
             {
@@ -176,15 +171,12 @@ namespace AyiHockWebAPI.Controllers
         [Authorize(Roles = "admin, staff")]
         public async Task<ActionResult> Delete(int id)
         {
-            var delete = _mealService.GetMealFullInfoFromDB(id);
-
+            var delete = await _mealService.DeleteMeal(id);
+            
             if (delete == null)
-                return NotFound();
-
-            _ayihockDbContext.Meals.Remove(delete);
-            await _ayihockDbContext.SaveChangesAsync();
-
-            return NoContent();
+                return NotFound("MealId不存在!");
+            else
+                return Ok();
         }
     }
 }

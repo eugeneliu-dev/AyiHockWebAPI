@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "ayihock-website",
+  "private_key_id": "b59890dfa99d51d3cad44850b72badc44525dc1c",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQC0g0E6hISlN3Km\n3Tp5TxAoRyuVVI2GTKbEUgLQc7RA2fifhIdOfH4zoNu+R8qYch8k0VNM09xEDPb7\njEtYHXyRkGMJfweEt46azWW4jFKNH2lujbLLSzTpJaNuc7JO9dmds/YPuLdGk25V\njh0ei2LAYalQdcFoMRB8XHj+U2rB7nmWUsSflS8f64hx4BaB8QA49WowAXmoGAfR\nPufuecSMaIFUlyaW7gVtQ62oNpneqeElDr6/Ik3yziiViRsU5329qSuvhBOrdRj9\nfWdwaRy4QYK63rs1TLCRv+nM0DTspwLmjUAI0jzOvdPABKUvTkkV7zwhfgUNn/e9\nKXWfkksRAgMBAAECggEAHJOW1PO7qAgiH2ZwZlns3eN+c9KB4RvrXrL4/RUEGSwo\nnuA1J2iv9e5mOzZUTVPruEFnJYd4nFFNHD92ggmQ+d5Yv10bzJfefIU9sDyOqQar\nAzRtdJ+ATdSGjerE9JkZDU07C/wbD5IxalvoIjjAtmH/ktxBdQQnbviYsvJzuSWK\nSjWO9cHbE9u7tbI4aO2mepGn96EILYYdNaDZQQNQDqegYOosGys//hOR1EMZOUQc\nzUgtLFMLjHMS8rQoF65Wc3DmrMVeaSFCa0CsjCrR+/Y/osnIuoaWkHSvKbrYr147\nttCDgThkGkcUSJAyGqRPUXNheRu/Ytyf0si1R3HvEQKBgQDqdmsbcM/o4gnvyl09\n2fZJerdwK2XP+TBelVJe3JfTRWsUFY0h1Ku4jK2Up/a4ufKVEtRYQmZpAwPK/5ji\nzqW+STVgvdelPTVwLct4nngJ47bsSwJ7jWLcYqC8/46uf6VAzjdrZiVsj7w/k8Ln\nqTQ2Pm+H1SO/VZRXwxN7/U6OxQKBgQDFGCkrA19SlgxxNqzp/7JIlwGI+eY1uRzw\nuRjnSAFAwVwNqvPihs8QwvzLzElRYS92FR2X/zuputkP11kw5pUYgucrNUf554hv\nrT8zUirCXxWEIJ6ZN6kON8bGZD1+Ld3HyzJQ2r0Q7TrPbPd6Sg7fTWCXZGFdz6JY\ngkbtnQ2P3QKBgGFFMZhXzBmstTyjMt23MGM5oyLJDlsi4XtL7blnQSGoWg0iB8Qy\nS++rhVP3/vaSRl6sSiY3ne8RDiDIu2/VFZQFITz6ZZ2q8CGTDigDbn+D1l7fm68Q\ncCRIUrE2QMaKNE/XfcxzuzD3zLx/m8uqOfwLGRA8T7FQWtOyHcJBy7aVAoGBAKgC\nkoViGI3T7sNLclb+asHKR7q2G/HL3MmvX3U4QikrKwdTpRaDCFwne0tW12ER0V19\nXn7FSdzDtGj2j8dJp+r/G4QPpU14eyuHqYpcDqsmVrcM/2VotymxjjZsGKdI/fdk\nVX3rGKQnNazAHK4YF1lvIlmrbfyEFMYSN9gxuu/ZAoGBANKRW74C2Zp6r8nyc9dN\n08t8pp7eN+2T30OLtmB8HHqJGhStg0ly/Dsfar4CVlL+A9jhmDS8Q9qa0g+8FDj2\nCZIdaIj1cSdz6iTshbg8j9ugAa97NGrLjuZuJH077E3RMgJUJ8WyFcFNmZYEUrEH\n059/ZZhjA60EI9JYyqZJP2Td\n-----END PRIVATE KEY-----\n",
+  "client_email": "service-account@ayihock-website.iam.gserviceaccount.com",
+  "client_id": "115434467533240670120",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/service-account%40ayihock-website.iam.gserviceaccount.com"
+}

@@ -28,8 +28,6 @@ namespace AyiHockWebAPI.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        //[ResultFormatFilter]
-        [TypeFilter(typeof(ResultFormatFilter))]
         public async Task<ActionResult<List<NewsGetDto>>> Get()
         {
             var newses = await _newsService.GetNewsList();
@@ -109,9 +107,12 @@ namespace AyiHockWebAPI.Controllers
         [Authorize(Roles = "admin, staff")]
         public async Task<ActionResult> Delete(int id)
         {
-            await _newsService.DeleteNews(id);
+            var delete = await _newsService.DeleteNews(id);
 
-            return NoContent();
+            if (delete == null)
+                return NotFound("NewsId不存在!");
+            else
+                return NoContent();
         }
 
     }

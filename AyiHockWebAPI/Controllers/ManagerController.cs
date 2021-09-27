@@ -1,6 +1,8 @@
 ﻿using AyiHockWebAPI.Dtos;
+using AyiHockWebAPI.Filters;
 using AyiHockWebAPI.Helpers;
 using AyiHockWebAPI.Models;
+using AyiHockWebAPI.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -13,23 +15,15 @@ using System.Threading.Tasks;
 namespace AyiHockWebAPI.Controllers
 {
     [Route("api/[controller]")]
+    [TypeFilter(typeof(ResultFormatFilter))]
     [ApiController]
     public class ManagerController : ControllerBase
     {
-        private readonly d5qp1l4f2lmt76Context _ayihockDbContext;
-        private readonly IConfiguration _configuration;
-        private readonly EncryptDecryptHelper _encryptDecryptHelper;
-        private readonly AutoSendEmailHelper _autoSendEmailHelper;
+        private readonly ManagerService _managerService;
 
-        public ManagerController(d5qp1l4f2lmt76Context ayihockDbContext,
-                                  IConfiguration configuration,
-                                  EncryptDecryptHelper encryptDecryptHelper,
-                                  AutoSendEmailHelper autoSendEmailHelper)
+        public ManagerController(ManagerService managerService)
         {
-            _ayihockDbContext = ayihockDbContext;
-            _configuration = configuration;
-            _encryptDecryptHelper = encryptDecryptHelper;
-            _autoSendEmailHelper = autoSendEmailHelper;
+            _managerService = managerService;
         }
 
         /// <summary>
@@ -37,20 +31,11 @@ namespace AyiHockWebAPI.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        [Authorize]
-        public ActionResult<List<ManagerGetTotalInfoDto>> GetUsersTotalInfo()
+        [Authorize("JtiRestraint")]
+        [Authorize(Roles = "admin")]
+        public async Task<ActionResult<List<ManagerGetTotalInfoDto>>> GetManagersTotalInfo()
         {
-            var managers = (from a in _ayihockDbContext.Managers
-                            where a.IsAdmin == false
-                            select new ManagerGetTotalInfoDto
-                            {
-                                ManagerId = a.ManagerId,
-                                Name = a.Name,
-                                Email = a.Email,
-                                Phone = a.Phone,
-                                Enable = a.Enable,
-                                IsAdmin = a.IsAdmin
-                            }).ToList().OrderBy(a => a.Enable);
+            var managers = await _managerService.GetManagersListTotalInfo();
 
             if (managers == null || managers.Count() <= 0)
                 return NotFound();
@@ -63,50 +48,35 @@ namespace AyiHockWebAPI.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet("{id}")]
-        public ActionResult<ManagerGetTotalInfoDto> GetUserTotalInfo(Guid id)
+        [Authorize("JtiRestraint")]
+        [Authorize(Roles = "admin")]
+        public async Task<ActionResult<ManagerGetTotalInfoDto>> GetManagerTotalInfo(Guid id)
         {
-            var managerById = (from a in _ayihockDbContext.Managers
-                                where a.IsAdmin == false
-                                select new ManagerGetTotalInfoDto
-                                {
-                                    ManagerId = a.ManagerId,
-                                    Name = a.Name,
-                                    Email = a.Email,
-                                    Phone = a.Phone,
-                                    Enable = a.Enable,
-                                    IsAdmin = a.IsAdmin
-                                }).SingleOrDefault();
+            var managerById = await _managerService.GetManagerTotalInfo(id);
 
             if (managerById == null)
                 return NotFound();
             else
-                return managerById;
+                return Ok(managerById);
         }
 
         /// <summary>
         /// 查詢管理人員(基本資料)(ApplyRole: staff/admin)
         /// </summary>
         /// <returns></returns>
-        [HttpGet("basicinfo")] 
-        [Authorize]
-        public ActionResult<ManagerGetBasicInfoDto> GetUserBasicInfo()
+        [HttpGet("basicinfo")]
+        [Authorize("JtiRestraint")]
+        [Authorize(Roles = "admin, staff")]
+        public async Task<ActionResult<ManagerGetBasicInfoDto>> GetUserBasicInfo()
         {
             var sub = User.Identity.Name;
 
-            var managerById = (from a in _ayihockDbContext.Managers
-                               where a.Email == sub
-                               select new ManagerGetBasicInfoDto
-                               {
-                                   Name = a.Name,
-                                   Email = a.Email,
-                                   Phone = a.Phone,
-                                   IsAdmin = a.IsAdmin
-                               }).SingleOrDefault();
+            var managerById = await _managerService.GetManagerBasicInfo(sub);
 
             if (managerById == null)
                 return NotFound();
             else
-                return managerById;
+                return Ok(managerById);
         }
 
         /// <summary>
@@ -114,32 +84,17 @@ namespace AyiHockWebAPI.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpPost]
-        public ActionResult Post([FromBody] ManagerPostDto value)
+        [Authorize("JtiRestraint")]
+        [Authorize(Roles = "admin")]
+        public async Task<ActionResult> Post([FromBody] ManagerPostDto value)
         {
-            //var sub = User.Identity.Name;
-            var getMgrByEmail = (from a in _ayihockDbContext.Managers
-                                 where a.Email == value.Email
-                                 select a).SingleOrDefault();
-            if (getMgrByEmail != null)
+            var manager = _managerService.GetManagerFullInfoByMail(value.Email);
+            if (manager != null)
                 return BadRequest();
 
-            Guid guid = Guid.NewGuid();
+            await _managerService.PostManager(value);
 
-            Manager manager = new Manager
-            {
-                ManagerId = guid,
-                Name = value.Name,
-                Email = value.Email,
-                Password = _encryptDecryptHelper.AESDecrypt(value.Password), //需前端加密處理,後端解密
-                Phone = value.Phone,
-                Enable = true,
-                IsAdmin = false
-            };
-
-            _ayihockDbContext.Managers.Add(manager);
-            _ayihockDbContext.SaveChanges();
-
-            return NoContent();
+            return Ok();
         }
 
         /// <summary>
@@ -147,90 +102,68 @@ namespace AyiHockWebAPI.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpPut("{id}")]
-        public ActionResult Put(Guid id, [FromBody] ManagerPutDto value)
+        [Authorize("JtiRestraint")]
+        [Authorize(Roles = "admin")]
+        public async Task<ActionResult> Put(Guid id, [FromBody] ManagerPutDto value)
         {
-            var getMgrByEmail = (from a in _ayihockDbContext.Managers
-                                 where a.Email == value.Email
-                                 select a).SingleOrDefault();
-            if (getMgrByEmail != null)
+            var manager = _managerService.GetManagerFullInfoByMail(value.Email);
+            if (manager != null)
                 return BadRequest();
 
-            var update = (from a in _ayihockDbContext.Managers
-                          where a.ManagerId == id 
-                          select a).SingleOrDefault();
+            var update = _managerService.GetManagerFullInfoById(id);
 
             if (update != null)
             {
-                update.Name = value.Name;
-                update.Email = value.Email;
-                update.Phone = value.Phone;
-                update.Enable = value.Enable;
-
-                _ayihockDbContext.SaveChanges();
+                await _managerService.PutManager(update, value);
+                return Ok();
             }
             else
             {
                 return NotFound();
             }
-
-            return NoContent();
         }
 
         /// <summary>
         /// 修改管理人員個人密碼(ApplyRole: staff/admin)
         /// </summary>
         /// <returns></returns>
-        [HttpPut("userpwd")]
-        public ActionResult PutPwd([FromBody] ManagerPutPwdDto value)
+        [HttpPut("pwd")]
+        [Authorize("JtiRestraint")]
+        [Authorize(Roles = "admin, staff")]
+        public async Task<ActionResult> PutPwd([FromBody] ManagerPutPwdDto value)
         {
-            var sub = User.Identity.Name;
-
-            var update = (from a in _ayihockDbContext.Managers
-                          where a.Email == sub && a.Password == _encryptDecryptHelper.AESDecrypt(value.OldPassword)
-                          select a).SingleOrDefault();
+            var update = _managerService.GetManagerFullInfoByOldPassword(User.Identity.Name, value.OldPassword);
 
             if (update != null)
             {
-                update.Password = _encryptDecryptHelper.AESDecrypt(value.NewPassword);  //需前端加密處理,後端解密
-
-                _ayihockDbContext.SaveChanges();
+                await _managerService.PutManagerNewPassword(value, update);
+                return Ok();
             }
             else
             {
-                return BadRequest();
+                return BadRequest("舊帳號輸入錯誤!");
             }
-
-            return NoContent();
         }
 
         /// <summary>
-        /// 重置管理人員個人密碼(ApplyRole: staff/admin)
+        /// 重置管理人員個人密碼(ApplyRole: anonymous)
         /// </summary>
         /// <returns></returns>
-        [HttpPut("userpwdreset")]
-        public ActionResult PutPwdReset()
+        [HttpPut("pwdreset")]
+        [AllowAnonymous]
+        public async Task<ActionResult> PutPwdReset(string mail)
         {
-            var sub = User.Identity.Name;
-
-            var update = (from a in _ayihockDbContext.Managers
-                          where a.Email == sub
-                          select a).SingleOrDefault();
+            var update = _managerService.GetManagerFullInfoByMail(mail);
 
             if (update != null)
             {
-                string newPwd = _encryptDecryptHelper.GetRandomStr();
-
-                update.Password = newPwd;
-                _ayihockDbContext.SaveChanges();
-
-                _autoSendEmailHelper.SendAuthEmail(sub, "新密碼如下:\n" + newPwd);
+                await _managerService.PutManagerResetPassword(mail, update);
+                return Ok();
             }
             else
             {
-                return NotFound();
+                return BadRequest("電子郵件輸入錯誤!");
             }
-
-            return NoContent();
         }
 
         /// <summary>
@@ -238,19 +171,16 @@ namespace AyiHockWebAPI.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpDelete("{id}")]
-        public ActionResult Delete(Guid id)
+        [Authorize("JtiRestraint")]
+        [Authorize(Roles = "admin")]
+        public async Task<ActionResult> Delete(Guid id)
         {
-            var delete = (from a in _ayihockDbContext.Managers
-                          where a.ManagerId == id
-                          select a).SingleOrDefault();
+            var delete = await _managerService.DeleteManager(id);
 
             if (delete == null)
-                return NotFound();
-
-            _ayihockDbContext.Managers.Remove(delete);
-            _ayihockDbContext.SaveChanges();
-
-            return NoContent();
+                return NotFound("CustomerId不存在!");
+            else
+                return Ok();
         }
 
     }

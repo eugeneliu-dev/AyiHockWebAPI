@@ -94,14 +94,15 @@ namespace AyiHockWebAPI.Services
             await _ayihockDbContext.SaveChangesAsync();
         }
 
-        public async Task DeleteNews(int id)
+        public async Task<News> DeleteNews(int id)
         {
             var delete = GetNewsFullInfoFromDB(id);
             if (delete == null)
-                return;
+                return null;
 
             _ayihockDbContext.News.Remove(delete);
             await _ayihockDbContext.SaveChangesAsync();
+            return delete;
         }
 
 

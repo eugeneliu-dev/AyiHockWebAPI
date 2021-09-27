@@ -1,4 +1,5 @@
 ﻿using AyiHockWebAPI.Dtos;
+using AyiHockWebAPI.Interface;
 using AyiHockWebAPI.Models;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -14,11 +15,13 @@ namespace AyiHockWebAPI.Services
     {
         private readonly d5qp1l4f2lmt76Context _ayihockDbContext;
         private readonly IWebHostEnvironment _env;
+        private readonly ICloudStorage _cloudStorage;
 
-        public MealService(d5qp1l4f2lmt76Context ayihockDbContext, IWebHostEnvironment env)
+        public MealService(d5qp1l4f2lmt76Context ayihockDbContext, IWebHostEnvironment env, ICloudStorage cloudStorage)
         {
             _ayihockDbContext = ayihockDbContext;
             _env = env;
+            _cloudStorage = cloudStorage;
         }
 
         public Meal GetMealFullInfoFromDB(int id)
@@ -89,16 +92,7 @@ namespace AyiHockWebAPI.Services
 
         public async Task PostMeal(MealPostDto value)
         {
-            string root = _env.ContentRootPath + @"\wwwroot\meals\";
-            if (!Directory.Exists(root))
-                Directory.CreateDirectory(root);
-
-            string filePath = root + value.File.FileName;
-
-            using (var stream = System.IO.File.Create(filePath))
-            {
-                await value.File.CopyToAsync(stream);
-            }
+            var cloudImgPath = await _cloudStorage.UploadFileAsync(value.File, value.File.FileName);
 
             Meal meal = new Meal
             {
@@ -106,11 +100,56 @@ namespace AyiHockWebAPI.Services
                 Description = value.Meal.Description,
                 Type = value.Meal.Type,
                 Price = value.Meal.Price,
-                Picture = @"\wwwroot\meals\" + value.File.FileName
+                Picture = cloudImgPath,
+                Picturename = value.File.FileName
             };
 
             _ayihockDbContext.Meals.Add(meal);
             await _ayihockDbContext.SaveChangesAsync();
+        }
+
+        public async Task PutMeal(Meal update, MealPutBasicInfoDto value)
+        {
+            _ayihockDbContext.Meals.Update(update).CurrentValues.SetValues(value);
+            await _ayihockDbContext.SaveChangesAsync();
+        }
+
+        public async Task PutMealAll(Meal update, MealPutTotalInfoDto value)
+        {
+            var cloudImgPath = await _cloudStorage.UploadFileAsync(value.File, value.File.FileName);
+            var oldImgName = update.Picturename;
+
+            if (update.Picturename == value.File.FileName)
+            {
+                _ayihockDbContext.Meals.Update(update).CurrentValues.SetValues(value.Meal);
+                await _ayihockDbContext.SaveChangesAsync();
+            }
+            else
+            {
+                update.Name = value.Meal.Name;
+                update.Price = value.Meal.Price;
+                update.Type = value.Meal.Type;
+                update.Description = value.Meal.Description;
+                update.Picture = cloudImgPath;
+                update.Picturename = value.File.FileName;
+
+                await _ayihockDbContext.SaveChangesAsync();
+                await _cloudStorage.DeleteFileAsync(oldImgName);
+            }
+        }
+
+        public async Task<Meal> DeleteMeal(int id)
+        {
+            var delete = GetMealFullInfoFromDB(id);
+            if (delete == null)
+                return null;
+
+            _ayihockDbContext.Meals.Remove(delete);
+            _ayihockDbContext.SaveChanges();
+
+            await _cloudStorage.DeleteFileAsync(delete.Picturename);
+
+            return delete;
         }
 
 

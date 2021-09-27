@@ -13,6 +13,7 @@ namespace AyiHockWebAPI.Models
         public int Price { get; set; }
         public int Type { get; set; }
         public string Picture { get; set; }
+        public string Picturename { get; set; }
 
         public virtual Mealtype TypeNavigation { get; set; }
     }

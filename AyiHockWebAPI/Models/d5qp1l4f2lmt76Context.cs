@@ -154,6 +154,10 @@ namespace AyiHockWebAPI.Models
                     .IsRequired()
                     .HasColumnName("picture");
 
+                entity.Property(e => e.Picturename)
+                    .IsRequired()
+                    .HasColumnName("picturename");
+
                 entity.Property(e => e.Price).HasColumnName("price");
 
                 entity.Property(e => e.Type).HasColumnName("type");

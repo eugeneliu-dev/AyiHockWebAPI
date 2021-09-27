@@ -50,6 +50,7 @@ namespace AyiHockWebAPI.Filters
                     result.Data = null;
                 }
 
+                context.HttpContext.Response.StatusCode = (int)statusCode;
                 await context.HttpContext.Response.WriteAsync(JsonConvert.SerializeObject(result));
                 
                 await next();
