@@ -30,21 +30,11 @@ namespace AyiHockWebAPI.Helpers
             // 在 RFC 7519 規格中(Section#4)，總共定義了 7 個預設的 Claims，我們應該只用的到兩種！
             claims.Add(new Claim(JwtRegisteredClaimNames.Sub, account)); // User.Identity.Name
             claims.Add(new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())); // JWT ID
-            //claims.Add(new Claim(JwtRegisteredClaimNames.Iss, issuer));
-            //claims.Add(new Claim(JwtRegisteredClaimNames.Aud, "The Audience"));
-            //claims.Add(new Claim(JwtRegisteredClaimNames.Exp, DateTimeOffset.UtcNow.AddMinutes(expireMinutes).ToUnixTimeSeconds().ToString()));
-            //claims.Add(new Claim(JwtRegisteredClaimNames.Nbf, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString())); // 必須為數字
-            //claims.Add(new Claim(JwtRegisteredClaimNames.Iat, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString())); // 必須為數字
-            //claims.Add(new Claim(JwtRegisteredClaimNames.NameId, userName)); // 網路上常看到的這個 NameId 設定是多餘的
-            //claims.Add(new Claim(ClaimTypes.Name, userName)); // 這個 Claim 也以直接被 JwtRegisteredClaimNames.Sub 取代，所以也是多餘的
 
             // 你可以自行擴充 "roles" 加入登入者該有的角色
-            //claims.Add(new Claim("roles", "Admin"));
             claims.Add(new Claim(ClaimTypes.Role, _GetRoleName(role)));
             claims.Add(new Claim(ClaimTypes.Name, name));
             claims.Add(new Claim("platform", platform.ToString()));
-            //claims.Add(new Claim(ClaimTypes.Role, _GetRoleName(role)));
-
 
             var userClaimsIdentity = new ClaimsIdentity(claims);
 
@@ -59,9 +49,6 @@ namespace AyiHockWebAPI.Helpers
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Issuer = issuer,
-                //Audience = issuer,        // 由於你的 API 受眾通常沒有區分特別對象，因此通常不太需要設定，也不太需要驗證
-                //NotBefore = DateTime.Now, // 預設值就是 DateTime.Now
-                //IssuedAt = DateTime.Now,  // 預設值就是 DateTime.Now
                 Subject = userClaimsIdentity,
                 Expires = DateTime.Now.AddMinutes(expireMinutes),
                 SigningCredentials = signingCredentials

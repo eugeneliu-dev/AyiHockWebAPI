@@ -40,7 +40,7 @@ namespace AyiHockWebAPI.Helpers
         public string GetRandomStr()
         {
             string allowedChars = "abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNOPQRSTUVWXYZ0123456789!@$?_-";
-            int passwordLength = 12;
+            int passwordLength = _configuration.GetValue<int>("Encrypt:RandomCodeLength"); ;
             char[] chars = new char[passwordLength];
             Random rd = new Random();
 
@@ -158,65 +158,6 @@ namespace AyiHockWebAPI.Helpers
 
             return plaintext;
         }
-
-
-        //public string AESDecrypt(string cipherText)
-        //{
-        //    string password = _configuration.GetValue<string>("Encrypt:Key");
-        //    byte[] cipherBytes = Convert.FromBase64String(cipherText);
-        //    using (Aes encryptor = Aes.Create())
-        //    {
-        //        var salt = cipherBytes.Take(16).ToArray();
-        //        var iv = cipherBytes.Skip(16).Take(16).ToArray();
-        //        var encrypted = cipherBytes.Skip(32).ToArray();
-        //        Rfc2898DeriveBytes pdb = new Rfc2898DeriveBytes(password, salt, 100);
-        //        encryptor.Key = pdb.GetBytes(32);
-        //        encryptor.Padding = PaddingMode.PKCS7;
-        //        encryptor.Mode = CipherMode.CBC;
-        //        encryptor.IV = iv;
-        //        using (MemoryStream ms = new MemoryStream(encrypted))
-        //        {
-        //            using (CryptoStream cs = new CryptoStream(ms, encryptor.CreateDecryptor(), CryptoStreamMode.Read))
-        //            {
-        //                using (var reader = new StreamReader(cs, Encoding.UTF8))
-        //                {
-        //                    return reader.ReadToEnd();
-        //                }
-        //            }
-        //        }
-        //    }
-        //}
-
-        //public string AESEncrypt(string plainText)
-        //{
-        //    byte[] iv = new byte[16];
-        //    byte[] array;
-
-        //    using (Aes aes = Aes.Create())
-        //    {
-        //        aes.Key = Encoding.UTF8.GetBytes(_configuration.GetValue<string>("Encrypt:Key"));
-        //        aes.IV = iv;
-        //        aes.Padding = PaddingMode.PKCS7;
-        //        aes.Mode = CipherMode.CBC;
-
-        //        ICryptoTransform encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
-
-        //        using (MemoryStream memoryStream = new MemoryStream())
-        //        {
-        //            using (CryptoStream cryptoStream = new CryptoStream((Stream)memoryStream, encryptor, CryptoStreamMode.Write))
-        //            {
-        //                using (StreamWriter streamWriter = new StreamWriter((Stream)cryptoStream))
-        //                {
-        //                    streamWriter.Write(plainText);
-        //                }
-
-        //                array = memoryStream.ToArray();
-        //            }
-        //        }
-        //    }
-
-        //    return Convert.ToBase64String(array);
-        //}
 
 
 
