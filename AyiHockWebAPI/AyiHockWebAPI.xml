@@ -18,7 +18,7 @@
         </member>
         <member name="M:AyiHockWebAPI.Controllers.CustomerController.GetUser">
             <summary>
-            查詢使用者(ApplyRole: user)
+            查詢使用者(僅提供一般帳號)(ApplyRole: user)
             </summary>
             <returns></returns>
         </member>
@@ -48,11 +48,17 @@
         </member>
         <member name="M:AyiHockWebAPI.Controllers.CustomerController.PutPwd(AyiHockWebAPI.Dtos.CustomerPutPwdByUserDto)">
             <summary>
-            更新使用者密碼(ApplyRole: user)
+            更新使用者密碼(僅提供一般帳號)(ApplyRole: user)
             </summary>
             <returns></returns>
         </member>
-        <member name="M:AyiHockWebAPI.Controllers.CustomerController.PutPwdReset(System.String)">
+        <member name="M:AyiHockWebAPI.Controllers.CustomerController.PutPwdForget(AyiHockWebAPI.Dtos.CustomerPutPwdByForgetDto)">
+            <summary>
+            忘記密碼(發送驗證碼至信箱供重置密碼)(ApplyRole: anonymous)
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:AyiHockWebAPI.Controllers.CustomerController.PutPwdReset(AyiHockWebAPI.Dtos.CustomerPutPwdByResetDto)">
             <summary>
             重置使用者密碼(ApplyRole: anonymous)
             </summary>
@@ -67,6 +73,12 @@
         <member name="M:AyiHockWebAPI.Controllers.LoginController.SignIn(AyiHockWebAPI.Dtos.LoginDto)">
             <summary>
             前台帳號登入(ApplyRole: anonymous)
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:AyiHockWebAPI.Controllers.LoginController.SignInWithSocial(AyiHockWebAPI.Dtos.SocialUser)">
+            <summary>
+            前台Google帳號登入(ApplyRole: anonymous)
             </summary>
             <returns></returns>
         </member>
