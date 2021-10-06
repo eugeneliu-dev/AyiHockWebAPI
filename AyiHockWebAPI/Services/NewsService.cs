@@ -38,8 +38,8 @@ namespace AyiHockWebAPI.Services
                                     Title = a.Title,
                                     Content = a.Content,
                                     ManagerName = _ayihockDbContext.Managers.Where(mgr => mgr.ManagerId == a.Manager).Select(mgr => mgr.Name).SingleOrDefault(),
-                                    CreateTime = a.CreateTime.ToString("yyyy-MM-dd"),
-                                    ModifyTime = a.ModifyTime.ToString("yyyy-MM-dd"),
+                                    CreateTime = a.CreateTime,
+                                    ModifyTime = a.ModifyTime,
                                     IsHot = a.IsHot,
                                     CategoryName = _ayihockDbContext.Newscategories.Where(cate => cate.NewsCategoryId == a.Category).Select(cate => cate.Name).SingleOrDefault()
                                 }).ToListAsync();
@@ -56,8 +56,8 @@ namespace AyiHockWebAPI.Services
                                       Title = a.Title,
                                       Content = a.Content,
                                       ManagerName = _ayihockDbContext.Managers.Where(mgr => mgr.ManagerId == a.Manager).Select(mgr => mgr.Name).SingleOrDefault(),
-                                      CreateTime = a.CreateTime.ToString("yyyy-MM-dd"),
-                                      ModifyTime = a.ModifyTime.ToString("yyyy-MM-dd"),
+                                      CreateTime = a.CreateTime,
+                                      ModifyTime = a.ModifyTime,
                                       IsHot = a.IsHot,
                                       CategoryName = _ayihockDbContext.Newscategories.Where(cate => cate.NewsCategoryId == a.Category).Select(cate => cate.Name).SingleOrDefault()
                                   }).SingleOrDefaultAsync();

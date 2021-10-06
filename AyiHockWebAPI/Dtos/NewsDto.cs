@@ -11,8 +11,8 @@ namespace AyiHockWebAPI.Dtos
         public string Title { get; set; }
         public string Content { get; set; }
         public string ManagerName { get; set; }
-        public string CreateTime { get; set; }
-        public string ModifyTime { get; set; }
+        public DateTime CreateTime { get; set; }
+        public DateTime ModifyTime { get; set; }
         public bool IsHot { get; set; }
         public string CategoryName { get; set; }
     }
