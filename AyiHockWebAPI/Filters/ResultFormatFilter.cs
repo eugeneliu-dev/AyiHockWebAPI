@@ -41,7 +41,7 @@ namespace AyiHockWebAPI.Filters
                 if (Is200SeriousStatusCode((int)statusCode))
                 {
                     result.Success = true;
-                    result.Message = statusCode.ToString() + retMsg;
+                    result.Message = statusCode.ToString();
                     result.Data = (context.Result as ObjectResult)?.Value;
                 }
                 else
