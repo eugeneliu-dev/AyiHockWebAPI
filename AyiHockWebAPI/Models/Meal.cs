@@ -14,6 +14,7 @@ namespace AyiHockWebAPI.Models
         public int Type { get; set; }
         public string Picture { get; set; }
         public string Picturename { get; set; }
+        public bool Disable { get; set; }
 
         public virtual Mealtype TypeNavigation { get; set; }
     }

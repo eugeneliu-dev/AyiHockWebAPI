@@ -19,5 +19,7 @@ namespace AyiHockWebAPI.Models
         public DateTime ModifyTime { get; set; }
         public int Money { get; set; }
         public Guid Modifier { get; set; }
+        public int Platform { get; set; }
+        public string PrePassword { get; set; }
     }
 }

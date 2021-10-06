@@ -30,6 +30,7 @@ namespace AyiHockWebAPI.Models
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
+
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -71,6 +72,14 @@ namespace AyiHockWebAPI.Models
                 entity.Property(e => e.Phone)
                     .IsRequired()
                     .HasColumnName("phone");
+
+                entity.Property(e => e.Platform)
+                    .HasColumnName("platform")
+                    .HasComment("0: original\n1: Google\n2. Facebook");
+
+                entity.Property(e => e.PrePassword)
+                    .HasColumnName("pre_password")
+                    .HasDefaultValueSql("''::text");
 
                 entity.Property(e => e.Role).HasColumnName("role");
             });
@@ -145,6 +154,10 @@ namespace AyiHockWebAPI.Models
                 entity.Property(e => e.Description)
                     .IsRequired()
                     .HasColumnName("description");
+
+                entity.Property(e => e.Disable)
+                    .HasColumnName("disable")
+                    .HasComment("是否為過時菜單\n是: 1\n否: 0");
 
                 entity.Property(e => e.Name)
                     .IsRequired()
