@@ -30,6 +30,7 @@ namespace AyiHockWebAPI.Filters
 
                 ResultDto result = new ResultDto();
                 var statusCode = (context.Result as ObjectResult)?.StatusCode;
+                var retMsg = (context.Result as ObjectResult)?.Value;
 
                 if (statusCode == null)
                 {
@@ -40,13 +41,13 @@ namespace AyiHockWebAPI.Filters
                 if (Is200SeriousStatusCode((int)statusCode))
                 {
                     result.Success = true;
-                    result.Message = statusCode.ToString();
+                    result.Message = statusCode.ToString() + retMsg;
                     result.Data = (context.Result as ObjectResult)?.Value;
                 }
                 else
                 {
                     result.Success = false;
-                    result.Message = statusCode.ToString();
+                    result.Message = statusCode.ToString() + retMsg;
                     result.Data = null;
                 }
 
