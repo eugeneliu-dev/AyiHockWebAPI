@@ -172,7 +172,7 @@ namespace AyiHockWebAPI.Controllers
         [Authorize(Roles = "admin, staff")]
         public async Task<ActionResult> Delete(int id)
         {
-            var delete = await _mealService.DeleteMeal(id);
+            var delete = await _mealService.DisableMeal(id);
             
             if (delete == null)
                 return NotFound("MealId不存在!");

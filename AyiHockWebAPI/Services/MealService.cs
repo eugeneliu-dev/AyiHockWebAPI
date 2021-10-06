@@ -35,6 +35,7 @@ namespace AyiHockWebAPI.Services
         public async Task<List<MealGetDto>> GetMealList()
         {
             var meals = await (from a in _ayihockDbContext.Meals
+                               where a.Disable == false
                                select new MealGetDto
                                {
                                    MealId = a.MealId,
@@ -61,7 +62,7 @@ namespace AyiHockWebAPI.Services
         public async Task<MealGetDto> GetMeal(int id)
         {
             var mealById = await (from a in _ayihockDbContext.Meals
-                                  where a.MealId == id
+                                  where a.MealId == id && a.Disable == false
                                   select new MealGetDto
                                   {
                                       MealId = a.MealId,
@@ -77,7 +78,7 @@ namespace AyiHockWebAPI.Services
         public async Task<List<MealGetDto>> GetMealListByTypeId(int type_id)
         {
             var mealsByType = await (from a in _ayihockDbContext.Meals
-                                     where a.Type == type_id
+                                     where a.Type == type_id && a.Disable == false
                                      select new MealGetDto
                                      {
                                          MealId = a.MealId,
@@ -138,18 +139,16 @@ namespace AyiHockWebAPI.Services
             }
         }
 
-        public async Task<Meal> DeleteMeal(int id)
+        public async Task<Meal> DisableMeal(int id)
         {
-            var delete = GetMealFullInfoFromDB(id);
-            if (delete == null)
+            var disableMeal = GetMealFullInfoFromDB(id);
+            if (disableMeal == null)
                 return null;
 
-            _ayihockDbContext.Meals.Remove(delete);
-            _ayihockDbContext.SaveChanges();
+            disableMeal.Disable = true;
+            await _ayihockDbContext.SaveChangesAsync();
 
-            await _cloudStorage.DeleteFileAsync(delete.Picturename);
-
-            return delete;
+            return disableMeal;
         }
 
 
