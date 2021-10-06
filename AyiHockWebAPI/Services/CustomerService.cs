@@ -145,7 +145,7 @@ namespace AyiHockWebAPI.Services
             _ayihockDbContext.Customers.Add(customer);
             await _ayihockDbContext.SaveChangesAsync();
 
-            string apiRoot = _configuration.GetValue<string>("URL:Root");
+            string apiRoot = _configuration.GetValue<string>("URL:ApiRoot");
             string authLink = "連結如下:\n" + apiRoot + "/api/customer/auth?varify=" + _encryptDecryptHelper.AESEncrypt(guid.ToString());
             _autoSendEmailHelper.SendAuthEmail(value.Email, authLink);
         }
@@ -213,7 +213,7 @@ namespace AyiHockWebAPI.Services
             update.PrePassword = prePwd;
 
             await _ayihockDbContext.SaveChangesAsync();
-            string resetPwdUri = _configuration.GetValue<string>("Web:ResetPwd");
+            string resetPwdUri = _configuration.GetValue<string>("URL:ResetPwd");
             string authLink = string.Format("驗證碼: {0}，請至以下連結更改密碼\n，{1}", prePwd, resetPwdUri);
             _autoSendEmailHelper.SendAuthEmail(userMail, authLink);
         }
