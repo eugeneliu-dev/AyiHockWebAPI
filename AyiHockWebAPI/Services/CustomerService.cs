@@ -33,7 +33,7 @@ namespace AyiHockWebAPI.Services
         public Customer GetCustomerFullInfoByMail(string mail)
         {
             var customer = (from a in _ayihockDbContext.Customers
-                            where a.Email == mail
+                            where a.Email == mail && a.Platform == (int)LoginPlatform.Original
                             select a).SingleOrDefault();
             return customer;
         }
@@ -49,7 +49,16 @@ namespace AyiHockWebAPI.Services
         public Customer GetCustomerFullInfoByOldPassword(string mail, string oldPassword)
         {
             var customer = (from a in _ayihockDbContext.Customers
-                            where a.Email == mail && a.Password == _encryptDecryptHelper.AESDecrypt(oldPassword).Replace("\"", "")
+                            where a.Email == mail && a.Platform == (int)LoginPlatform.Original && a.Password == _encryptDecryptHelper.AESDecrypt(oldPassword).Replace("\"", "")
+                            select a).SingleOrDefault();
+            return customer;
+        }
+
+        public Customer GetCustomerFullInfoByPrePassword(string mail, string prePassword)
+        {
+            int randomCodeLength = _configuration.GetValue<int>("Encrypt:RandomCodeLength");
+            var customer = (from a in _ayihockDbContext.Customers
+                            where a.Email == mail && a.Platform == (int)LoginPlatform.Original && a.PrePassword.Length == randomCodeLength && a.PrePassword == prePassword
                             select a).SingleOrDefault();
             return customer;
         }
@@ -69,7 +78,8 @@ namespace AyiHockWebAPI.Services
                                        Money = a.Money,
                                        Modifier = a.Modifier,
                                        CreateTime = a.CreateTime,
-                                       ModifyTime = a.ModifyTime
+                                       ModifyTime = a.ModifyTime,
+                                       Platform = a.Platform
                                    }).OrderBy(a => a.CreateTime).ToListAsync();
             return customers;
         }
@@ -90,7 +100,8 @@ namespace AyiHockWebAPI.Services
                                           Money = a.Money,
                                           Modifier = a.Modifier,
                                           CreateTime = a.CreateTime,
-                                          ModifyTime = a.ModifyTime
+                                          ModifyTime = a.ModifyTime,
+                                          Platform = a.Platform
                                       }).SingleOrDefaultAsync();
 
             return customerById;
@@ -99,7 +110,7 @@ namespace AyiHockWebAPI.Services
         public async Task<CustomerGetByUserDto> GetCustomerFromUser(string sub)
         {
             var customerByMail = await (from a in _ayihockDbContext.Customers
-                                        where a.Email == sub
+                                        where a.Email == sub && a.Platform == (int)LoginPlatform.Original
                                         select new CustomerGetByUserDto
                                         {
                                             Name = a.Name,
@@ -134,7 +145,7 @@ namespace AyiHockWebAPI.Services
             _ayihockDbContext.Customers.Add(customer);
             await _ayihockDbContext.SaveChangesAsync();
 
-            string apiRoot = _configuration.GetValue<string>("Web:Api");
+            string apiRoot = _configuration.GetValue<string>("URL:Root");
             string authLink = "連結如下:\n" + apiRoot + "/api/customer/auth?varify=" + _encryptDecryptHelper.AESEncrypt(guid.ToString());
             _autoSendEmailHelper.SendAuthEmail(value.Email, authLink);
         }
@@ -159,7 +170,7 @@ namespace AyiHockWebAPI.Services
                 customer.Enable = true;
                 await _ayihockDbContext.SaveChangesAsync();
 
-                string url = _configuration.GetValue<string>("Web:Site");
+                string url = _configuration.GetValue<string>("URL:Login");
                 System.Diagnostics.Process.Start("explorer", url);
 
                 return customer;
@@ -188,20 +199,23 @@ namespace AyiHockWebAPI.Services
             await _ayihockDbContext.SaveChangesAsync();
         }
 
-        public async Task PutCustomerNewPassword(CustomerPutPwdByUserDto value, Customer update)
+        public async Task PutCustomerNewPassword(string newPassword, Customer update)
         {
-            update.Password = _encryptDecryptHelper.AESDecrypt(value.NewPassword).Replace("\"", "");  //需前端加密處理,後端解密
+            update.Password = _encryptDecryptHelper.AESDecrypt(newPassword).Replace("\"", "");  //需前端加密處理,後端解密
+            update.PrePassword = "";
 
             await _ayihockDbContext.SaveChangesAsync();
         }
 
         public async Task PutCustomerResetPassword(string userMail, Customer update)
         {
-            string newPwd = _encryptDecryptHelper.GetRandomStr();
-            update.Password = newPwd;
+            string prePwd = _encryptDecryptHelper.GetRandomStr();
+            update.PrePassword = prePwd;
 
             await _ayihockDbContext.SaveChangesAsync();
-            _autoSendEmailHelper.SendAuthEmail(userMail, "新密碼:" + newPwd);
+            string resetPwdUri = _configuration.GetValue<string>("Web:ResetPwd");
+            string authLink = string.Format("驗證碼: {0}，請至以下連結更改密碼\n，{1}", prePwd, resetPwdUri);
+            _autoSendEmailHelper.SendAuthEmail(userMail, authLink);
         }
 
         public async Task<Customer> DeleteCustomer(Guid id)

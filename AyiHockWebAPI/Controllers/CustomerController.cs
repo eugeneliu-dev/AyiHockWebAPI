@@ -65,7 +65,7 @@ namespace AyiHockWebAPI.Controllers
         }
 
         /// <summary>
-        /// 查詢使用者(ApplyRole: user)
+        /// 查詢使用者(僅提供一般帳號)(ApplyRole: user)
         /// </summary>
         /// <returns></returns>
         [HttpGet("user")]
@@ -91,7 +91,7 @@ namespace AyiHockWebAPI.Controllers
         [AllowAnonymous]
         public async Task<ActionResult> Post([FromBody] CustomerPostDto value)
         {
-            var getCusByEmail = _customerService.GetCustomerFromUser(value.Email);
+            var getCusByEmail = await _customerService.GetCustomerFromUser(value.Email);
             if (getCusByEmail != null)
                 return BadRequest();
      
@@ -108,18 +108,15 @@ namespace AyiHockWebAPI.Controllers
         [AllowAnonymous]
         public async Task<ActionResult> GetAuth(string varify)
         {
-            //trans varifyStr to Guid
-            Guid guid = Guid.Parse(_encryptDecryptHelper.AESDecrypt(varify));
-
             //check Guid is exist?
             var customer = await _customerService.AuthCustomer(varify);
             if (customer == null)
             {
-                return NotFound("varifyication is failed");
+                return NotFound("驗證失敗");
             }
             else
             {
-                return NoContent();
+                return Ok();
             }
         }
 
@@ -141,7 +138,7 @@ namespace AyiHockWebAPI.Controllers
             if (update != null)
             {
                 await _customerService.PutCustomerFromManager(manager.ManagerId, value, update);
-                return NoContent();
+                return Ok();
             }
             else
             {
@@ -163,7 +160,7 @@ namespace AyiHockWebAPI.Controllers
             if (update != null)
             {
                 await _customerService.PutCustomerFromUser(value, update);
-                return NoContent();
+                return Ok();
             }
             else
             {
@@ -172,10 +169,10 @@ namespace AyiHockWebAPI.Controllers
         }
 
         /// <summary>
-        /// 更新使用者密碼(ApplyRole: user)
+        /// 更新使用者密碼(僅提供一般帳號)(ApplyRole: user)
         /// </summary>
         /// <returns></returns>
-        [HttpPut("user/pwd")]
+        [HttpPut("user/pwdmodify")]
         [Authorize("JtiRestraint")]
         [Authorize(Roles = "normal, golden, platinum, diamond")]
         public async Task<ActionResult> PutPwd([FromBody] CustomerPutPwdByUserDto value)
@@ -184,12 +181,32 @@ namespace AyiHockWebAPI.Controllers
 
             if (update != null)
             {
-                await _customerService.PutCustomerNewPassword(value, update);
-                return NoContent();
+                await _customerService.PutCustomerNewPassword(value.NewPassword, update);
+                return Ok();
             }
             else
             {
                 return BadRequest("舊帳號輸入錯誤!");
+            }
+        }
+
+        /// <summary>
+        /// 忘記密碼(發送驗證碼至信箱供重置密碼)(ApplyRole: anonymous)
+        /// </summary>
+        /// <returns></returns>
+        [HttpPut("user/pwdforget")]
+        [AllowAnonymous]
+        public async Task<ActionResult> PutPwdForget(CustomerPutPwdByForgetDto value)
+        {
+            var update = _customerService.GetCustomerFullInfoByMail(value.UserAccountMail);
+            if (update != null)
+            {
+                await _customerService.PutCustomerResetPassword(value.UserAccountMail, update);
+                return Ok();
+            }
+            else
+            {
+                return BadRequest("電子郵件輸入錯誤!");
             }
         }
 
@@ -199,18 +216,17 @@ namespace AyiHockWebAPI.Controllers
         /// <returns></returns>
         [HttpPut("user/pwdreset")]
         [AllowAnonymous]
-        public async Task<ActionResult> PutPwdReset(string mail)
+        public async Task<ActionResult> PutPwdReset([FromBody] CustomerPutPwdByResetDto value)
         {
-            var update = _customerService.GetCustomerFullInfoByMail(mail);
-
+            var update = _customerService.GetCustomerFullInfoByPrePassword(value.UserAccountMail, value.DefaultPassword);
             if (update != null)
             {
-                await _customerService.PutCustomerResetPassword(mail, update);
+                await _customerService.PutCustomerNewPassword(value.NewPassword, update);
                 return Ok();
             }
             else
             {
-                return BadRequest("電子郵件輸入錯誤!");
+                return BadRequest("驗證碼或郵件信箱輸入錯誤!");
             }
         }
 

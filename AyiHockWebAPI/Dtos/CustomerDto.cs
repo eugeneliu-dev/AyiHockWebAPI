@@ -18,6 +18,7 @@ namespace AyiHockWebAPI.Dtos
         public Guid Modifier { get; set; }
         public DateTime CreateTime { get; set; }
         public DateTime ModifyTime { get; set; }
+        public int Platform { get; set; }
     }
 
     public class CustomerGetByUserDto
@@ -47,6 +48,18 @@ namespace AyiHockWebAPI.Dtos
     public class CustomerPutPwdByUserDto
     {
         public string OldPassword { get; set; }
+        public string NewPassword { get; set; }
+    }
+
+    public class CustomerPutPwdByForgetDto
+    {
+        public string UserAccountMail { get; set; }
+    }
+
+    public class CustomerPutPwdByResetDto
+    {
+        public string UserAccountMail { get; set; }
+        public string DefaultPassword { get; set; }
         public string NewPassword { get; set; }
     }
 
