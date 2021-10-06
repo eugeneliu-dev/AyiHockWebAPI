@@ -3,6 +3,7 @@ using AyiHockWebAPI.Filters;
 using AyiHockWebAPI.Helpers;
 using AyiHockWebAPI.Models;
 using AyiHockWebAPI.Services;
+using Google.Apis.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -30,7 +31,8 @@ namespace AyiHockWebAPI.Controllers
 
         public LoginController(d5qp1l4f2lmt76Context ayihockDbContext, 
                                JwtHelper jwt,
-                               LoginService loginService)
+                               LoginService loginService,
+                               CustomerService customerService)
         {
             _ayihockDbContext = ayihockDbContext;
             _jwtHelper = jwt;
@@ -53,11 +55,52 @@ namespace AyiHockWebAPI.Controllers
                 //bool ret = await _loginService.DeleteExpiredJti(30);
 
                 //回傳JwtToken
-                return Ok(_jwtHelper.GenerateToken(loginDtoWithRole.Email, loginDtoWithRole.Role, loginDtoWithRole.Name));
+                return Ok(_jwtHelper.GenerateToken(loginDtoWithRole.Email, loginDtoWithRole.Role, loginDtoWithRole.Name, (int)LoginPlatform.Original));
             }
             else
             {
                 return BadRequest();
+            }
+        }
+
+        /// <summary>
+        /// 前台Google帳號登入(ApplyRole: anonymous)
+        /// </summary>
+        /// <returns></returns>
+        [AllowAnonymous]
+        [HttpPost("signin/google")]
+        public async Task<ActionResult<string>> SignInWithSocial([FromBody] SocialUser user)
+        {
+            //驗證GoogleToken並取得Payload
+            var settings = new GoogleJsonWebSignature.ValidationSettings
+            {
+                Audience = new List<string>() { "730644139443-1s6dsft5mu2kf7l4bg5jscggjs2lmr18.apps.googleusercontent.com" }
+            };
+           
+            var payload = await GoogleJsonWebSignature.ValidateAsync(user.Token, settings);
+            if (payload == null)
+                return BadRequest("Google驗證失敗!");
+
+            //檢查帳號是否存在 (Yes:取回相關資訊 ; No:將此帳號加入DB)
+            //最後回傳Jwt
+            LoginDtoForSocial loginDtoForSocial = await _loginService.ValidateSocialUser(payload.Email, LoginPlatform.Google);
+
+            if (loginDtoForSocial != null)
+            {
+                if (!loginDtoForSocial.IsBlack && loginDtoForSocial.Enable)
+                {
+                    return Ok(_jwtHelper.GenerateToken(loginDtoForSocial.Email, loginDtoForSocial.Role, loginDtoForSocial.Name, (int)LoginPlatform.Google));
+                }
+                else
+                {
+                    return BadRequest("使用者為黑名單成員，無法操作!");
+                }
+            }
+            else
+            {
+                var customer = await _loginService.AddSocialUser(payload.Name, payload.Email, LoginPlatform.Google);
+
+                return Ok(_jwtHelper.GenerateToken(customer.Email, customer.Role, customer.Name, (int)LoginPlatform.Google));
             }
         }
 
@@ -77,7 +120,7 @@ namespace AyiHockWebAPI.Controllers
                 //bool ret = await _loginService.DeleteExpiredJti(30);
 
                 //回傳JwtToken
-                return Ok(_jwtHelper.GenerateToken(loginDtoWithRole.Email, loginDtoWithRole.Role, loginDtoWithRole.Name));
+                return Ok(_jwtHelper.GenerateToken(loginDtoWithRole.Email, loginDtoWithRole.Role, loginDtoWithRole.Name, (int)LoginPlatform.Original));
             }
             else
             {
@@ -101,7 +144,7 @@ namespace AyiHockWebAPI.Controllers
 
             await _loginService.SetJtiToBlackList(jti, expire);
 
-            return NoContent();
+            return Ok();
         }
 
     }

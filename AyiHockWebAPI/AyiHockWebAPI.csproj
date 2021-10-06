@@ -9,6 +9,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Google.Apis" Version="1.55.0" />
+    <PackageReference Include="Google.Apis.Auth" Version="1.55.0" />
+    <PackageReference Include="Google.Apis.Core" Version="1.55.0" />
     <PackageReference Include="Google.Cloud.Storage.V1" Version="3.5.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="5.0.8" />
     <PackageReference Include="Microsoft.AspNetCore.Cors" Version="2.2.0" />

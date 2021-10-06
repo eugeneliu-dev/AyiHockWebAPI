@@ -18,4 +18,28 @@ namespace AyiHockWebAPI.Dtos
         public int Role { get; set; }
         public string Name { get; set; }
     }
+
+    public class LoginDtoForSocial
+    {
+        public string Email { get; set; }
+        public string Name { get; set; }
+        public int Role { get; set; }
+        public bool Enable { get; set; }
+        public bool IsBlack { get; set; }
+    }
+
+    public class SocialUser
+    {
+        public string Name { get; set; }
+        public string Email { get; set; }
+        public string Token { get; set; }
+    }
+
+    public enum LoginPlatform
+    {
+        Original = 0,
+        Google = 1,
+        Facebook = 2
+    }
+
 }

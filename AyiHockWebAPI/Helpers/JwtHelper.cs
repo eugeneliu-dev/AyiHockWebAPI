@@ -18,7 +18,7 @@ namespace AyiHockWebAPI.Helpers
         {
             this.Configuration = configuration;
         }
-        public string GenerateToken(string account, int role, string name)
+        public string GenerateToken(string account, int role, string name, int platform)
         {
             var issuer = Configuration.GetValue<string>("JwtSettings:Issuer");
             var signKey = Configuration.GetValue<string>("JwtSettings:SignKey");
@@ -42,7 +42,7 @@ namespace AyiHockWebAPI.Helpers
             //claims.Add(new Claim("roles", "Admin"));
             claims.Add(new Claim(ClaimTypes.Role, _GetRoleName(role)));
             claims.Add(new Claim(ClaimTypes.Name, name));
-            //claims.Add(new Claim("role", _GetRoleName(role)));
+            claims.Add(new Claim("platform", platform.ToString()));
             //claims.Add(new Claim(ClaimTypes.Role, _GetRoleName(role)));
 
 

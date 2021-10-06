@@ -29,13 +29,36 @@ namespace AyiHockWebAPI.Services
             if (!string.IsNullOrWhiteSpace(login.Email) && !string.IsNullOrWhiteSpace(login.Password))
             {
                 var res = await (from a in _ayihockDbContext.Customers
-                                 where a.Email == login.Email && a.Password == login.Password && a.Enable == true
+                                 where a.Email == login.Email && a.Password == login.Password && a.Enable == true && a.Isblack != true && a.Platform == (int)LoginPlatform.Original
                                  select new LoginDtoWithRole
                                  {
                                       Email = a.Email,
                                       Password = a.Password,
                                       Role = a.Role,
                                       Name = a.Name
+                                 }).SingleOrDefaultAsync();
+                return res;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        public async Task<LoginDtoForSocial> ValidateSocialUser(string email, LoginPlatform platform)
+        {
+            if (!string.IsNullOrWhiteSpace(email))
+            {
+                int p = (int)platform;
+                var res = await (from a in _ayihockDbContext.Customers
+                                 where a.Email == email && a.Platform == p
+                                 select new LoginDtoForSocial
+                                 {
+                                     Email = a.Email,
+                                     Name = a.Name,
+                                     Role = a.Role,
+                                     Enable = a.Enable,
+                                     IsBlack = a.Isblack
                                  }).SingleOrDefaultAsync();
                 return res;
             }
@@ -66,6 +89,32 @@ namespace AyiHockWebAPI.Services
             }
         }
 
+        public async Task<Customer> AddSocialUser(string name, string email, LoginPlatform platform)
+        {
+            Guid guid = Guid.NewGuid();
+            int p = (int)platform;
+
+            Customer customer = new Customer
+            {
+                CustomerId = guid,
+                Name = name,
+                Email = email,
+                Password = "ThisIsSocialUser_Google",
+                Phone = "0900000000",
+                Enable = true,
+                Isblack = false,
+                Modifier = guid,
+                CreateTime = DateTime.Now,
+                ModifyTime = DateTime.Now,
+                Platform = p
+            };
+
+            _ayihockDbContext.Customers.Add(customer);
+            await _ayihockDbContext.SaveChangesAsync();
+
+            return customer;
+        }
+
         public async Task<bool> SetJtiToBlackList(string jti, int expire )
         {
             if (string.IsNullOrWhiteSpace(jti) || expire <= 0)
@@ -84,6 +133,8 @@ namespace AyiHockWebAPI.Services
 
             return true;
         }
+
+        
 
     }
 }
