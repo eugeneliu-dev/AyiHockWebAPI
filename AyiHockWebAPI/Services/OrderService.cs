@@ -24,16 +24,16 @@ namespace AyiHockWebAPI.Services
         //    return news;
         //}
 
-        public Customer GetCustomerInfo(string sub)
+        public Customer GetCustomerInfo(string sub, string platform)
         {
-            return _ayihockDbContext.Customers.Select(cus => cus).Where(cus => sub == cus.Email).FirstOrDefault();
+            return _ayihockDbContext.Customers.Select(cus => cus).Where(cus => sub == cus.Email && cus.Platform == Convert.ToInt32(platform)).FirstOrDefault();
         }
 
         public async Task<List<OrderGetDto>> GetOrderList(Customer customer)
         {
             var orderlist = await (from order in _ayihockDbContext.Orders
-                                   join cus in _ayihockDbContext.Customers on order.Orderer equals cus.CustomerId
                                    where order.Orderer == customer.CustomerId
+                                   join cus in _ayihockDbContext.Customers on order.Orderer equals cus.CustomerId
                                    select new OrderGetDto
                                    {
                                        OrderId = order.OrderId,
@@ -43,8 +43,8 @@ namespace AyiHockWebAPI.Services
                                        CreateTime = order.CreateTime,
                                        ModifyTime = order.ModifyTime,
                                        OrderContents = (from content in _ayihockDbContext.Ordercontents
-                                                        join meal in _ayihockDbContext.Meals on content.MealId equals meal.MealId
                                                         where order.OrderId == content.OrderId
+                                                        join meal in _ayihockDbContext.Meals on content.MealId equals meal.MealId
                                                         select new OrderContentGetDto
                                                         {
                                                             OrderId = content.OrderId,

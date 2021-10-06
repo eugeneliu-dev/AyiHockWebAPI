@@ -34,7 +34,8 @@ namespace AyiHockWebAPI.Controllers
         [Authorize(Roles = "normal, golden, platinum, diamond")]
         public async Task<ActionResult<List<OrderGetDto>>> Get()
         {
-            var customer = _orderService.GetCustomerInfo(User.Identity.Name);
+            var platform = User.Claims.FirstOrDefault(p => p.Type == "platform").Value.ToString();
+            var customer = _orderService.GetCustomerInfo(User.Identity.Name, platform);
             if (customer == null)
                 return BadRequest();
 
@@ -55,7 +56,8 @@ namespace AyiHockWebAPI.Controllers
         [Authorize(Roles = "normal, golden, platinum, diamond")]
         public async Task<ActionResult> Post([FromBody] OrderPostDto value)
         {
-            var customer = _orderService.GetCustomerInfo(User.Identity.Name);
+            var platform = User.Claims.FirstOrDefault(p => p.Type == "platform").Value.ToString();
+            var customer = _orderService.GetCustomerInfo(User.Identity.Name, platform);
             if (customer == null)
                 return BadRequest();
 
