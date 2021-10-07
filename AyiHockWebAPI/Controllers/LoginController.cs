@@ -44,7 +44,7 @@ namespace AyiHockWebAPI.Controllers
         /// </summary>
         /// <returns></returns>
         [AllowAnonymous]
-        [HttpPost("signin")]
+        [HttpPost("normal")]
         public async Task<ActionResult<string>> SignIn([FromBody] LoginDto login)
         {
             LoginDtoWithRole loginDtoWithRole = await _loginService.ValidateUser(login);
@@ -68,7 +68,7 @@ namespace AyiHockWebAPI.Controllers
         /// </summary>
         /// <returns></returns>
         [AllowAnonymous]
-        [HttpPost("signin/google")]
+        [HttpPost("google")]
         public async Task<ActionResult<string>> SignInWithSocial([FromBody] SocialUser user)
         {
             //驗證GoogleToken並取得Payload
@@ -109,7 +109,7 @@ namespace AyiHockWebAPI.Controllers
         /// </summary>
         /// <returns></returns>
         [AllowAnonymous]
-        [HttpPost("adminsignin")]
+        [HttpPost("admin")]
         public async Task<ActionResult<string>> AdminSignIn([FromBody] LoginDto login)
         {
             LoginDtoWithRole loginDtoWithRole = await _loginService.ValidateAdmin(login);
