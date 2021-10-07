@@ -151,7 +151,8 @@ namespace AyiHockWebAPI
                 app.UseSwagger();
                 app.UseSwaggerUI(c =>
                 {
-                    c.SwaggerEndpoint("../swagger/v1/swagger.json", "AyiHockWebAPI v1");
+                    string swaggerJsonBasePath = string.IsNullOrWhiteSpace(c.RoutePrefix) ? "." : "..";
+                    c.SwaggerEndpoint($"{swaggerJsonBasePath}/swagger/v1/swagger.json", "AyiHockWebAPI v1");
                 });
             }
 
