@@ -166,12 +166,6 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="M:AyiHockWebAPI.Controllers.MealController.Put(System.Int32,AyiHockWebAPI.Dtos.MealPutBasicInfoDto)">
-            <summary>
-            修改單一菜色(只修改資訊)(ApplyRole: admin/staff)
-            </summary>
-            <returns></returns>
-        </member>
         <member name="M:AyiHockWebAPI.Controllers.MealController.PutAll(System.Int32,AyiHockWebAPI.Dtos.MealPutTotalInfoDto)">
             <summary>
             修改單一菜色(修改資訊+圖片)(ApplyRole: admin/staff)
