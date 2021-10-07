@@ -109,33 +109,35 @@ namespace AyiHockWebAPI.Services
             await _ayihockDbContext.SaveChangesAsync();
         }
 
-        public async Task PutMeal(Meal update, MealPutBasicInfoDto value)
+        public async Task PutMeal(Meal update, MealPutTotalInfoDto value)
         {
-            _ayihockDbContext.Meals.Update(update).CurrentValues.SetValues(value);
-            await _ayihockDbContext.SaveChangesAsync();
-        }
-
-        public async Task PutMealAll(Meal update, MealPutTotalInfoDto value)
-        {
-            var cloudImgPath = await _cloudStorage.UploadFileAsync(value.File, value.File.FileName);
-            var oldImgName = update.Picturename;
-
-            if (update.Picturename == value.File.FileName)
+            if (value.File != null)
             {
-                _ayihockDbContext.Meals.Update(update).CurrentValues.SetValues(value.Meal);
-                await _ayihockDbContext.SaveChangesAsync();
+                var cloudImgPath = await _cloudStorage.UploadFileAsync(value.File, value.File.FileName);
+                var oldImgName = update.Picturename;
+
+                if (update.Picturename == value.File.FileName)
+                {
+                    _ayihockDbContext.Meals.Update(update).CurrentValues.SetValues(value.Meal);
+                    await _ayihockDbContext.SaveChangesAsync();
+                }
+                else
+                {
+                    update.Name = value.Meal.Name;
+                    update.Price = value.Meal.Price;
+                    update.Type = value.Meal.Type;
+                    update.Description = value.Meal.Description;
+                    update.Picture = cloudImgPath;
+                    update.Picturename = value.File.FileName;
+
+                    await _ayihockDbContext.SaveChangesAsync();
+                    await _cloudStorage.DeleteFileAsync(oldImgName);
+                }
             }
             else
             {
-                update.Name = value.Meal.Name;
-                update.Price = value.Meal.Price;
-                update.Type = value.Meal.Type;
-                update.Description = value.Meal.Description;
-                update.Picture = cloudImgPath;
-                update.Picturename = value.File.FileName;
-
+                _ayihockDbContext.Meals.Update(update).CurrentValues.SetValues(value.Meal);
                 await _ayihockDbContext.SaveChangesAsync();
-                await _cloudStorage.DeleteFileAsync(oldImgName);
             }
         }
 

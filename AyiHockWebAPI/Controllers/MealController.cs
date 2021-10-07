@@ -120,32 +120,10 @@ namespace AyiHockWebAPI.Controllers
         }
 
         /// <summary>
-        /// 修改單一菜色(只修改資訊)(ApplyRole: admin/staff)
-        /// </summary>
-        /// <returns></returns>
-        [HttpPut("basicinfo/{id}")]
-        [Authorize("JtiRestraint")]
-        [Authorize(Roles = "admin, staff")]
-        public async Task<ActionResult> Put(int id, [FromBody] MealPutBasicInfoDto value)
-        {
-            var update = _mealService.GetMealFullInfoFromDB(id);
-
-            if (update != null)
-            {
-                await _mealService.PutMeal(update, value);
-                return Ok();
-            }
-            else
-            {
-                return NotFound();
-            }
-        }
-
-        /// <summary>
         /// 修改單一菜色(修改資訊+圖片)(ApplyRole: admin/staff)
         /// </summary>
         /// <returns></returns>
-        [HttpPut("allinfo/{id}")]
+        [HttpPut("{id}")]
         [Authorize("JtiRestraint")]
         [Authorize(Roles = "admin, staff")]
         public async Task<ActionResult> PutAll(int id, [FromForm] MealPutTotalInfoDto value)
@@ -154,7 +132,7 @@ namespace AyiHockWebAPI.Controllers
 
             if (update != null)
             {
-                await _mealService.PutMealAll(update, value);
+                await _mealService.PutMeal(update, value);
                 return Ok();
             }
             else

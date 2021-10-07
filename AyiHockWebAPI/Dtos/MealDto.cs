@@ -55,7 +55,6 @@ namespace AyiHockWebAPI.Dtos
         [ModelBinder(BinderType = typeof(JsonBinder))]
         [Required]
         public MealDto Meal { get; set; }
-        [Required]
         public IFormFile File { get; set; }
     }
 }
