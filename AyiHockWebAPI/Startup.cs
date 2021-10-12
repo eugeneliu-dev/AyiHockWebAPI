@@ -148,16 +148,16 @@ namespace AyiHockWebAPI
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                app.UseSwagger();
-                app.UseSwaggerUI(c =>
-                {
-                    string swaggerJsonBasePath = string.IsNullOrWhiteSpace(c.RoutePrefix) ? "." : "..";
-                    c.SwaggerEndpoint($"{swaggerJsonBasePath}/swagger/v1/swagger.json", "AyiHockWebAPI v1");
-                });
             }
 
             //套用CatchException到Middleware
             app.UseMiddleware<CatchExceptionMiddleware>();
+
+            app.UseSwagger();
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "AyiHockWebAPI v1");
+            });
 
             //套用Policy到Middleware
             app.UseCors("CorsPolicy");
