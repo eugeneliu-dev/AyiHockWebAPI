@@ -129,7 +129,6 @@ namespace AyiHockWebAPI.Controllers
         }
 
         [HttpPost("logout")]
-        [Authorize]
         [Authorize("JtiRestraint")]
         [Authorize(Roles = "admin, staff, normal, golden, platinum, diamond")]
         public async Task<ActionResult> LogoutToken()

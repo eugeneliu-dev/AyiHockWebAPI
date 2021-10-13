@@ -828,3 +828,28 @@
 2021-10-12 13:00:51.5628 Info Adding target FileTarget(Name=allfile)
 2021-10-12 13:00:51.5776 Info Adding target FileTarget(Name=ownFile-web)
 2021-10-12 13:00:51.6666 Info Validating config: TargetNames=allfile, ownFile-web, ConfigItems=46, FilePath=E:\Source\AyiHockWebAPI\AyiHockWebAPI\bin\Debug\net5.0\nlog.config
+2021-10-12 22:30:36.6150 Info Message Template Auto Format enabled
+2021-10-12 22:30:36.6410 Info Loading assembly: NLog.Web.AspNetCore
+2021-10-12 22:30:36.7144 Info Adding target FileTarget(Name=allfile)
+2021-10-12 22:30:36.7327 Info Adding target FileTarget(Name=ownFile-web)
+2021-10-12 22:30:36.7870 Info Validating config: TargetNames=allfile, ownFile-web, ConfigItems=46, FilePath=E:\Source\AyiHockWebAPI\AyiHockWebAPI\bin\Debug\net5.0\nlog.config
+2021-10-12 22:45:53.0967 Info Message Template Auto Format enabled
+2021-10-12 22:45:53.1284 Info Loading assembly: NLog.Web.AspNetCore
+2021-10-12 22:45:53.2749 Info Adding target FileTarget(Name=allfile)
+2021-10-12 22:45:53.3249 Info Adding target FileTarget(Name=ownFile-web)
+2021-10-12 22:45:53.3750 Info Validating config: TargetNames=allfile, ownFile-web, ConfigItems=46, FilePath=E:\Source\AyiHockWebAPI\AyiHockWebAPI\bin\Debug\net5.0\nlog.config
+2021-10-12 22:51:38.2390 Info Message Template Auto Format enabled
+2021-10-12 22:51:38.2644 Info Loading assembly: NLog.Web.AspNetCore
+2021-10-12 22:51:38.3641 Info Adding target FileTarget(Name=allfile)
+2021-10-12 22:51:38.3779 Info Adding target FileTarget(Name=ownFile-web)
+2021-10-12 22:51:38.4490 Info Validating config: TargetNames=allfile, ownFile-web, ConfigItems=46, FilePath=E:\Source\AyiHockWebAPI\AyiHockWebAPI\bin\Debug\net5.0\nlog.config
+2021-10-12 22:53:00.1788 Info Message Template Auto Format enabled
+2021-10-12 22:53:00.2096 Info Loading assembly: NLog.Web.AspNetCore
+2021-10-12 22:53:00.3260 Info Adding target FileTarget(Name=allfile)
+2021-10-12 22:53:00.3398 Info Adding target FileTarget(Name=ownFile-web)
+2021-10-12 22:53:00.3969 Info Validating config: TargetNames=allfile, ownFile-web, ConfigItems=46, FilePath=E:\Source\AyiHockWebAPI\AyiHockWebAPI\bin\Debug\net5.0\nlog.config
+2021-10-12 23:00:25.5831 Info Message Template Auto Format enabled
+2021-10-12 23:00:25.6080 Info Loading assembly: NLog.Web.AspNetCore
+2021-10-12 23:00:25.7303 Info Adding target FileTarget(Name=allfile)
+2021-10-12 23:00:25.7542 Info Adding target FileTarget(Name=ownFile-web)
+2021-10-12 23:00:25.8061 Info Validating config: TargetNames=allfile, ownFile-web, ConfigItems=46, FilePath=E:\Source\AyiHockWebAPI\AyiHockWebAPI\bin\Debug\net5.0\nlog.config
