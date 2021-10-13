@@ -70,9 +70,9 @@ namespace AyiHockWebAPI
                 option.AddPolicy("CorsPolicy", policy =>
                 {
                     //設定允許跨域的來源，有多個的話可以用`,`隔開
-                    policy.WithOrigins(Configuration.GetValue<string>("URL:WebSiteRoot"), "https://localhost:4200")
+                    policy.AllowAnyMethod()
                           .AllowAnyHeader()
-                          .AllowAnyMethod()
+                          .SetIsOriginAllowed(origin => true)
                           .AllowCredentials();
                 });
             });
